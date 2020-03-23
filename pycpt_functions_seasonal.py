@@ -1559,10 +1559,6 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 		f.write("7\n")
 		# Length of training period
 		f.write(str(ntrain)+'\n')
-		# Option: Length of cross-validation window
-		f.write("8\n")
-		# Enter length
-		f.write("3\n")
 
 		if MOS!="None":
 			# Turn ON transform predictand data
