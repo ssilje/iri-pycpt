@@ -167,19 +167,19 @@ def PrepFiles(rainfall_frequency, threshold_pctle, wlo1, wlo2,elo1, elo2,sla1, s
 		print('----------------------------------------------')
 
 def PrepFiles_usrNetcdf(fprefix, predictand, wlo1, wlo2,elo1, elo2, sla1, sla2, nla1, nla2, tgti, tgtf, mon, monf, fyr, tar, infile_predictand, infile_hindcast, infile_forecast):
-        """Function to download (or not) the needed files"""
+	"""Function to download (or not) the needed files"""
 
-		readNetCDF_predictand(infile_predictand,outfile, predictand, wlo2, elo2, sla2, nla2, tar)
-		print('Obs:precip file ready to go')
-		print('----------------------------------------------')
+	readNetCDF_predictand(infile_predictand,outfile, predictand, wlo2, elo2, sla2, nla2, tar)
+	print('Obs:precip file ready to go')
+	print('----------------------------------------------')
 
-		readNetCDF_Hindcasts(infile_hindcast, outfile, wlo1, elo1, sla1, nla1, tgti, tgtf, mon, tar)
-		print('Hindcasts file ready to go')
-		print('----------------------------------------------')
+	readNetCDF_Hindcasts(infile_hindcast, outfile, wlo1, elo1, sla1, nla1, tgti, tgtf, mon, tar)
+	print('Hindcasts file ready to go')
+	print('----------------------------------------------')
 
-		readNetCDF_Forecast(infile_forecast, outfile, monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1)
-		print('Forecasts file ready to go')
-		print('----------------------------------------------')
+	readNetCDF_Forecast(infile_forecast, outfile, monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1)
+	print('Forecasts file ready to go')
+	print('----------------------------------------------')
 
 def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2):
 	"""A simple plot function for the geographical domain
@@ -832,11 +832,11 @@ def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_seaso
 		dof=ntrain
 
 		#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-		with open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.ctl', "r") as fp:
+		with open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk1.ctl', "r") as fp:
 			for line in lines_that_contain("XDEF", fp):
 				W = int(line.split()[1])
 				XD= float(line.split()[4])
-		with open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.ctl', "r") as fp:
+		with open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk1.ctl', "r") as fp:
 			for line in lines_that_contain("YDEF", fp):
 				H = int(line.split()[1])
 				YD= float(line.split()[4])

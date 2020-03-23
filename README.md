@@ -30,7 +30,7 @@ James Doss-Gollin (Columbia Water Center) developed the original download Python
 Part of the effort to develop PyCPT is funded by the Columbia World Project "Adapting Agriculture to Climate Today, for Tomorrow" (ACToday), and NOAA MAPP's projects NA18OAR4310275 (Muñoz) and NA16OAR4310145 (Robertson).
 
 ## Installation Instructions
-See the ["Wiki"](https://bitbucket.org/py-iri/iri-pycpt/wiki/Home) tab for detailed instructions
+See the ["Wiki"](https://github.com/agmunozs/PyCPT/wiki) tab for detailed instructions
 
 It might be useful to use the provided iri-dev.yml conda environment file. If so, just follow the usual approach:
 
