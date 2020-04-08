@@ -851,7 +851,7 @@ def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_seaso
 				T = int(line.split()[1])
 				TD= 1  #not used
 
-		plt.figure(figsize=(15,15))
+		plt.figure(figsize=(15,18))
 
 		if ispctl:
 			thrso=thrs
