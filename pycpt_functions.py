@@ -1,4 +1,4 @@
-#This is PyCPT_functions.py (version1.7) -- 30 Mar 2020
+#This is PyCPT_functions.py (version1.7) -- 10 Apr 2020
 #Authors: ÁG Muñoz (agmunoz@iri.columbia.edu), AW Robertson (awr@iri.columbia.edu), T Turkington (NEA), SJ Mason
 #Notes: be sure it matches version of PyCPT
 #Log: see version.log in GitHub
