@@ -1,4 +1,4 @@
-#This is PyCPT_functions.py (version1.7) -- 10 Apr 2020
+#This is PyCPT_functions.py (version1.7) -- 30 Mar 2020
 #Authors: ÁG Muñoz (agmunoz@iri.columbia.edu), AW Robertson (awr@iri.columbia.edu), T Turkington (NEA), SJ Mason
 #Notes: be sure it matches version of PyCPT
 #Log: see version.log in GitHub
@@ -327,7 +327,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			if score == 'RocAbove' or score=='RocBelow':
 				var[var<0]=np.nan #only positive values
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
-				vmin=0,vmax=1,
+				vmin=0,vmax=100,
 				cmap=discrete_cmap(11, 'bwr'),
 				transform=ccrs.PlateCarree())
 				label = 'ROC area'
@@ -851,7 +851,7 @@ def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_seaso
 				T = int(line.split()[1])
 				TD= 1  #not used
 
-		plt.figure(figsize=(15,18))
+		plt.figure(figsize=(15,15))
 
 		if ispctl:
 			thrso=thrs
