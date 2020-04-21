@@ -1,6 +1,6 @@
 #This is PyCPT_functions_seasonal.py (version1.7) -- 28 Mar 2020
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
-#Notes: be sure it matches version of PyCPTT
+#Notes: be sure it matches version of PyCPT
 #Requires: CPTv16.5.2+
 #Log:
 
