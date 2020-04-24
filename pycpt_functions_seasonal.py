@@ -1511,7 +1511,6 @@ def GetForecast_RFREQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, wetday
 		print("\n Forecast URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_RFREQ_"+tar+"_ini"+monf+str(fyr)+".tsv")
 
-
 def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,tar,ntrain,MOS,station):
 		"""Function to write CPT namelist file
 
@@ -1712,14 +1711,14 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 		# cross-validated skill maps
 		f.write("413\n")
 		# save RocBelow score
-		f.write("10\n")
+		f.write("15\n")
 		file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_RocBelow_'+tar+'_'+mon+'\n'
 		f.write(file)
 
 		# cross-validated skill maps
 		f.write("413\n")
 		# save RocAbove score
-		f.write("11\n")
+		f.write("16\n")
 		file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_RocAbove_'+tar+'_'+mon+'\n'
 		f.write(file)
 
@@ -1956,7 +1955,6 @@ def NGensemble(models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
 
 		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
 		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+id+'_'+tar+'_'+monf+str(fyr)+'.dat','rb')
-		print(f)
 		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
 		for it in range(T):
 			#Now we read the field
@@ -1974,13 +1972,13 @@ def NGensemble(models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
 	#writeCPT(NG,'../output/NextGen_'+fprefix+'_'+tar+'_ini'+mon+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
 	if id=='FCST_xvPr':
 		writeCPT(NG,'../input/NextGen_'+fprefix+'_'+tar+'_ini'+mon+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
-		print('Files successfully produced')
+		print('Cross-validated prediction files successfully produced')
 	if id=='FCST_mu':
 		writeCPT(NG,'../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
-		print('Files successfully produced')
+		print('Forecast files successfully produced')
 	if id=='FCST_var':
 		writeCPT(NG,'../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
-		print('Files successfully produced')
+		print('Forecast error files successfully produced')
 
 def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
 	"""Function to write seasonal output in CPT format,

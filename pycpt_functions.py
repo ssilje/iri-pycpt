@@ -327,7 +327,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			if score == 'RocAbove' or score=='RocBelow':
 				var[var<0]=np.nan #only positive values
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
-				vmin=0,vmax=100,
+				vmin=0,vmax=1,
 				cmap=discrete_cmap(11, 'bwr'),
 				transform=ccrs.PlateCarree())
 				label = 'ROC area'
@@ -2340,14 +2340,14 @@ def CPTscript(mon,fday,lit,liti,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fpref
 		# cross-validated skill maps
 		f.write("413\n")
 		# save RocBelow score
-		f.write("10\n")
+		f.write("15\n")
 		file='../output/'+fprefix+'_'+mpref+'_RocBelow_'+training_season+'_wk'+str(wk)+'\n'
 		f.write(file)
 
 		# cross-validated skill maps
 		f.write("413\n")
 		# save RocAbove score
-		f.write("11\n")
+		f.write("16\n")
 		file='../output/'+fprefix+'_'+mpref+'_RocAbove_'+training_season+'_wk'+str(wk)+'\n'
 		f.write(file)
 
