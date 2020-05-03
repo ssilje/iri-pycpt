@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from matplotlib.colors import LinearSegmentedColormap
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 from netCDF4 import Dataset
 
 
@@ -130,45 +131,56 @@ def ncdump(nc_fid, verb=True):
 
 def PrepFiles(rainfall_frequency, threshold_pctle, wlo1, wlo2,elo1, elo2,sla1, sla2,nla1, nla2, day1, day2, fday, nday, fyr, mon, os, authkey, wk, wetday_threshold, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, force_download,mpref):
 	"""Function to download (or not) the needed files"""
-	if rainfall_frequency:
-		GetObs_RFREQ(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, authkey, wk, wetday_threshold, threshold_pctle, nlag, training_season, hstep, model, obs_source, force_download)
-		print('Obs:rfreq file ready to go')
-		print('----------------------------------------------')
-#		nday added after nlag for GEFS & CFSv2
-		GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, nday, training_season, hstep, model, hdate_last, force_download)
-		#GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, day1, day2, nday, fyr, mon, os, authkey, wk, wetday_threshold, nlag, training_season, hstep, model, force_download)
+	if obs_source=='userdef':
+		GetHindcastsUser(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, nday, training_season, hstep, model, hdate_last, force_download)
 		print('Hindcasts file ready to go')
 		print('----------------------------------------------')
-		#GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, authkey, wk, wetday_threshold, nlag, model, force_download)
-		GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, authkey, wk, nlag, model, hdate_last,threshold_pctle,training_season,wetday_threshold,force_download,mpref)
+		GetObsUser(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, authkey, wk, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, force_download)
+		print('Obs:precip file ready to go')
+		print('----------------------------------------------')
+		GetForecastUser(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, authkey, wk, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download,mpref)
 		print('Forecasts file ready to go')
 		print('----------------------------------------------')
 	else:
-		# if temp:
-		# 	GetHindcasts_Temp(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download)
-		# 	print('Hindcasts file ready to go')
-		# 	print('----------------------------------------------')
-		# 	GetObsTn(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, hdate_last, force_download)
-		# 	print('Obs:temp min file ready to go')
-		# 	print('----------------------------------------------')
-		# 	GetForecast_Temp(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download)
-		# 	print('Forecasts file ready to go')
-		# 	print('----------------------------------------------')
-		# else:
-		#GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, training_season, hstep, model, force_download)
-		#nday added after nlag for GEFS & CFSv2
-		GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, nday, training_season, hstep, model, hdate_last, force_download)
-		print('Hindcasts file ready to go')
-		print('----------------------------------------------')
-		GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, authkey, wk, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, force_download)
-		print('Obs:precip file ready to go')
-		print('----------------------------------------------')
-		GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, authkey, wk, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download,mpref)
-		print('Forecasts file ready to go')
-		print('----------------------------------------------')
+		if rainfall_frequency:
+			GetObs_RFREQ(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, authkey, wk, wetday_threshold, threshold_pctle, nlag, training_season, hstep, model, obs_source, force_download)
+			print('Obs:rfreq file ready to go')
+			print('----------------------------------------------')
+#			nday added after nlag for GEFS & CFSv2
+			GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, nday, training_season, hstep, model, hdate_last, force_download)
+			#GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, day1, day2, nday, fyr, mon, os, authkey, wk, wetday_threshold, nlag, training_season, hstep, model, force_download)
+			print('Hindcasts file ready to go')
+			print('----------------------------------------------')
+			#GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, authkey, wk, wetday_threshold, nlag, model, force_download)
+			GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, authkey, wk, nlag, model, hdate_last,threshold_pctle,training_season,wetday_threshold,force_download,mpref)
+			print('Forecasts file ready to go')
+			print('----------------------------------------------')
+		else:
+			# if temp:
+			# 	GetHindcasts_Temp(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download)
+			# 	print('Hindcasts file ready to go')
+			# 	print('----------------------------------------------')
+			# 	GetObsTn(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, hdate_last, force_download)
+			# 	print('Obs:temp min file ready to go')
+			# 	print('----------------------------------------------')
+			# 	GetForecast_Temp(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download)
+			# 	print('Forecasts file ready to go')
+			# 	print('----------------------------------------------')
+			# else:
+			#GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, training_season, hstep, model, force_download)
+			#nday added after nlag for GEFS & CFSv2
+			GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, nday, training_season, hstep, model, hdate_last, force_download)
+			print('Hindcasts file ready to go')
+			print('----------------------------------------------')
+			GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, authkey, wk, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, force_download)
+			print('Obs:precip file ready to go')
+			print('----------------------------------------------')
+			GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, authkey, wk, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download,mpref)
+			print('Forecasts file ready to go')
+			print('----------------------------------------------')
 
 def PrepFiles_usrNetcdf(fprefix, predictand, wlo1, wlo2,elo1, elo2, sla1, sla2, nla1, nla2, tgti, tgtf, mon, monf, fyr, tar, infile_predictand, infile_hindcast, infile_forecast):
-		"""Function to download (or not) the needed files"""
+		"""Function to user-provided NetCDF files"""
 
 		readNetCDF_predictand(infile_predictand,outfile, predictand, wlo2, elo2, sla2, nla2, tar)
 		print('Obs:precip file ready to go')
@@ -279,6 +291,10 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 		pl.xformatter = LONGITUDE_FORMATTER
 		pl.yformatter = LATITUDE_FORMATTER
 		ax.add_feature(states_provinces, edgecolor='gray')
+		lon_formatter = LongitudeFormatter(degree_symbol='')
+		lat_formatter = LatitudeFormatter(degree_symbol='')
+		ax.xaxis.set_major_formatter(lon_formatter)
+		ax.yaxis.set_major_formatter(lat_formatter)
 		ax.set_ybound(lower=lati, upper=late)
 
 		if score == 'CCAFCST_V' or score == 'PCRFCST_V' or score == 'noMOSFCST_V':
@@ -1583,6 +1599,27 @@ def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, day1, day2, nday, fyr, mon, os, k
 		get_ipython().system("gunzip -f model_RFREQ_"+mon+"_wk"+str(week)+".tsv.gz")
 		#! curl -g -k -b '__dlauth_id='$key'' ''$url'' > model_precip_${mo}.tsv
 
+def GetHindcastsUser(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download):
+	if not force_download:
+		try:
+			ff=open("model_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+		#dictionary:
+#		dic = { 'CFSv2': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L1/'+str(day1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/-'+str(nlag-1)+'/1/0/shiftdatashort/%5BS_lag/M%5Daverage/3./mul/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.control/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L1/'+str(day1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/-'+str(nlag-1)+'/1/0/shiftdatashort/%5BS_lag%5Daverage/add/4./div/S/('+training_season+')/VALUES/S/'+str(hstep)+'/STEP/dup/S/npts//I/exch/NewIntegerGRID/replaceGRID/dup/I/5/splitstreamgrid/%5BI2%5Daverage/sub/I/3/-1/roll/.S/replaceGRID/L1/S/add/0/RECHUNK//name//T/def/2/%7Bexch%5BL1/S%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/c://name//water_density/def/998/%28kg/m3%29/:c/div//mm/unitconvert//name/(tp)/def/grid://name/%28T%29/def//units/%28months%20since%201960-01-01%29/def//standard_name/%28time%29/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/3001/ensotime/:grid/use_as_grid//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+		dic = { 'NextGenR0': 'http://iridl.ldeo.columbia.edu/home/.xchourio/.IRAP2/.S2S/.R0HIND/.Caminadeetal/home/.xchourio/.IRAP2/.S2S/.R0HIND/.Mordecaietal/add/home/.xchourio/.IRAP2/.S2S/.R0HIND/.Wesolowskietal/add/home/.xchourio/.IRAP2/.S2S/.R0HIND/.LiuHelmerssonetal/add/4/div/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/RANGE/%5BL%5D//keepgrids/average/%5BM%5Daverage/S/%28days%20since%201960-01-01%29/streamgridunitconvert/%5BX/Y%5DREORDER/2/RECHUNK/S//pointwidth/0/def/30/shiftGRID/S//units//days/def/L/add/0/RECHUNK//name//T/def//long_name/%28Target%20date%29/def/2/%7Bexch%5BS/L%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid://name/%28T%29/def//units/%28months%20since%201960-01-01%29/def//standard_name/%28time%29/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1920/ensotime/:grid/replaceGRID//name/%28R0%29/def//units/%28unitless%29/def//long_name/%28R0%29/def/-999/replaceNaN/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+		}
+		# calls curl to download data
+		url=dic[model]
+		print("\n Hindcasts URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > model_precip_"+mon+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("gunzip -f model_precip_"+mon+"_wk"+str(week)+".tsv.gz")
+		#! curl -g -k -b '__dlauth_id='$key'' ''$url'' > model_precip_${mo}.tsv
+
 def GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, force_download):
 	if not force_download:
 		try:
@@ -1656,6 +1693,47 @@ def GetObs_RFREQ(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, 
 		get_ipython().system("gunzip -f obs_RFREQ_"+mon+"_wk"+str(week)+".tsv.gz")
 		#curl -g -k -b '__dlauth_id='$key'' ''$url'' > obs_precip_${mo}.tsv
 
+def GetObsUser(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, force_download):
+	if not force_download:
+		try:
+			ff=open("obs_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs precip file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+		#dictionary:
+#		dic = {'CFSv2':                'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.control/.sfc_precip/.tp/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/S/-'+str(nlag-1)+'/1/0/shiftdatashort/%5BS_lag%5Daverage/S/(0000%201%20Jan%201999)/(0000%2031%20Dec%202010)/RANGEEDGES/L1/'+str(day1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/('+training_season+')/VALUES/S/'+str(hstep)+'/STEP/L1/S/add/0/RECHUNK/name//T/def/2/%7Bexch%5BL1/S%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/'+obs_source+'/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/3/flagge/dup/pentadmean/%5BT%5D/regridLinear/sub/T/'+str(nday)+'/runningAverage/c%3A/7.0//units//days/def/%3Ac/mul/T/2/index/.T/SAMPLE/nip/dup/T/npts//I/exch/NewIntegerGRID/replaceGRID/I/3/-1/roll/.T/replaceGRID/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/3001/ensotime/%3Agrid/use_as_grid/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+		dic = {'NextGenR0': 'http://iridl.ldeo.columbia.edu/home/.xchourio/.IRAP2/.S2S/.R0HIND/.Caminadeetal/home/.xchourio/.IRAP2/.S2S/.R0HIND/.Mordecaietal/add/home/.xchourio/.IRAP2/.S2S/.R0HIND/.Wesolowskietal/add/home/.xchourio/.IRAP2/.S2S/.R0HIND/.LiuHelmerssonetal/add/4/div/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/RANGE/%5BL%5D//keepgrids/average/%5BM%5Daverage/S/(days%20since%201960-01-01)/streamgridunitconvert/%5BX/Y%5DREORDER/2/RECHUNK/S//pointwidth/0/def/30/shiftGRID/S//units//days/def/L/add/0/RECHUNK//name//T/def//long_name/(Target%20date)/def/2/%7Bexch%5BS/L%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/home/.xchourio/.IRAP2/.S2S/.R0OBS/.Caminadeetal/home/.xchourio/.IRAP2/.S2S/.R0OBS/.Mordecaietal/add/home/.xchourio/.IRAP2/.S2S/.R0OBS/.Wesolowskietal/add/home/.xchourio/.IRAP2/.S2S/.R0OBS/.LiuHelmerssonetal/add/4/div/T/2/index/.T/SAMPLE/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1920/ensotime/%3Agrid/replaceGRID//name/(R0%20obs)/def//units/(unitless)/def//long_name/(R0)/def/-999/replaceNaN/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+		}
+		# calls curl to download data
+		url=dic[model]
+		print("\n R0 'obs' data URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > obs_precip_"+mon+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("gunzip -f obs_precip_"+mon+"_wk"+str(week)+".tsv.gz")
+		#curl -g -k -b '__dlauth_id='$key'' ''$url'' > obs_precip_${mo}.tsv
+
+def GetForecastUser(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download,mpref):
+	if not force_download:
+		try:
+			ff=open("modelfcst_precip_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = { 'NextGenR0': 'http://iridl.ldeo.columbia.edu/home/.xchourio/.IRAP2/.S2S/.R0HIND/.Caminadeetal/home/.xchourio/.IRAP2/.S2S/.R0HIND/.Mordecaietal/add/home/.xchourio/.IRAP2/.S2S/.R0HIND/.Wesolowskietal/add/home/.xchourio/.IRAP2/.S2S/.R0HIND/.LiuHelmerssonetal/add/4/div/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/RANGE/%5BL%5D//keepgrids/average/%5BM%5Daverage/S/%28days%20since%201960-01-01%29/streamgridunitconvert/%5BX/Y%5DREORDER/2/RECHUNK/S//pointwidth/0/def/30/shiftGRID/S//units//days/def/L/add/0/RECHUNK//name//T/def//long_name/%28Target%20date%29/def/2/%7Bexch%5BS/L%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid://name/%28T%29/def//units/%28months%20since%201960-01-01%29/def//standard_name/%28time%29/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1920/ensotime/:grid/replaceGRID//name/%28R0%29/def//units/%28unitless%29/def//long_name/%28R0%29/def/-999/replaceNaN/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+		}
+		# calls curl to download data
+		url=dic[model]
+		print("\n Forecast URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > modelfcst_precip_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("gunzip -f modelfcst_precip_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv.gz")
+		#curl -g -k -b '__dlauth_id='$key'' ''$url'' > modelfcst_precip_fday${fday}.tsv
+
 def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download,mpref):
 	if not force_download:
 		try:
@@ -1684,7 +1762,7 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 		force_download = False
 
 		#The next two if-blocks are used for noMOS forecasts ##Added by AGM
-		#Short hindcast to correctly compute climatological period of the forecast
+		#Short hindcast to correctly compute climatological period of the actual forecast
 		if not force_download:
 			try:
 				ff=open("noMOS/modelshort_precip_"+mon+"_wk"+str(week)+".tsv", 'r')

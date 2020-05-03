@@ -82,7 +82,7 @@ def replaceAll(file,searchExp,replaceExp):
             line = line.replace(searchExp,replaceExp)
         sys.stdout.write(line)
 
-def setup_params(PREDICTOR,obs,MOS,tini,tend):
+def setup_params(PREDICTOR,PREDICTAND,obs,obs_source,MOS,tini,tend):
 	"""PyCPT setup"""
 	# Predictor switches
 	if PREDICTOR=='PRCP' or PREDICTOR=='UQ' or PREDICTOR=='VQ':
@@ -92,14 +92,17 @@ def setup_params(PREDICTOR,obs,MOS,tini,tend):
 	elif PREDICTOR=='RFREQ':
 		rainfall_frequency = True  #False uses total rainfall for forecast period, True uses frequency of rainy days
 		wetday_threshold = 3 #WET day threshold (mm) --only used if rainfall_frequency is True!
-		threshold_pctle = False    #False for threshold in mm; Note that if True then if counts DRY days!!!
+		threshold_pctle = False    #False for threshold in mm; Note that if True then it counts DRY days!!!
 
-	if rainfall_frequency:
+	if PREDICTAND=='RFREQ':
 		print('Predictand is Rainfall Frequency; wet day threshold = '+str(wetday_threshold)+' mm')
-	else:
+	if PREDICTAND=='PRCP':
 		print('Predictand is Rainfall Total (mm)')
+	if PREDICTAND=='userdef':
+		print('Predictand is a misterious field known by the user :P')
 
 	########Observation dataset URLs
+	hdate_last = 2015  #some arbitrary year --it gets updated below
 	if obs == 'CPC-CMAP-URD':
 	    obs_source = 'SOURCES/.Models/.NMME/.CPC-CMAP-URD/prate'
 	    hdate_last = 2010
@@ -115,6 +118,8 @@ def setup_params(PREDICTOR,obs,MOS,tini,tend):
 	elif obs == 'Chilestations':
 	    obs_source = 'home/.xchourio/.ACToday/.CHL/.prcp'
 	    hdate_last = 2019
+	elif obs == 'userdef':
+	    obs_source = obs_source
 	else:
 	    print ("Obs option is invalid")
 
@@ -1396,13 +1401,16 @@ def GetObs(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs_source, hdate_
 	if force_download:
 		if obs_source=='home/.xchourio/.ACToday/.CHL/.prcp':
 			url='http://iridl.ldeo.columbia.edu/'+obs_source+'/T/%28'+tar+'%29/seasonalAverage/-999/setmissing_value/%5B%5D%5BT%5Dcptv10.tsv'
+		elif obs_source=='ANACAFE':
+			url='http://iridl.ldeo.columbia.edu/IRIONLY/home/.xchourio/.ACToday/.COFFEE/.GUATEMALA/.ANUAL/.1989_2015/.Index_C/T/%28'+tar+'%29/seasonalAverage/-999/setmissing_value/%5B%5D%5BT%5Dcptv10.tsv'
 		else:
 			url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/(1%20Jan%20'+str(tini)+')/(31%20Dec%20'+str(tend)+')/RANGE/T/%28'+tar+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
 
 		print("\n Obs (Rainfall) data URL: \n\n "+url)
 		get_ipython().system("curl -k '"+url+"' > obs_"+predictand+"_"+tar+".tsv")
-		if obs_source=='home/.xchourio/.ACToday/.CHL/.prcp':   #weirdly enough, Ingrid sends the file with nfields=0. This is my solution for now. AGM
+		if station==True:   #weirdly enough, Ingrid sends the file with nfields=0. This is my solution for now. AGM
 			replaceAll("obs_"+predictand+"_"+tar+".tsv","cpt:nfields=0","cpt:nfields=1")
+
 
 
 def GetObs_RFREQ(predictand, tini,tend,wlo2, elo2, sla2, nla2, wetday_threshold, threshold_pctle, tar, obs_source, hdate_last, force_download,station):
@@ -1896,7 +1904,7 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 		#Forecast probability rounding:
 		f.write("1\n")
 		#End of required but not really used options ----
-		
+
 		#Verify
 		f.write("313\n")
 
