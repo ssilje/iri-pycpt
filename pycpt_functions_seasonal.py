@@ -82,7 +82,7 @@ def replaceAll(file,searchExp,replaceExp):
             line = line.replace(searchExp,replaceExp)
         sys.stdout.write(line)
 
-def setup_params(PREDICTOR,PREDICTAND,obs,obs_source,MOS,tini,tend):
+def setup_params(PREDICTOR,PREDICTAND,obs,MOS,tini,tend):
 	"""PyCPT setup"""
 	# Predictor switches
 	if PREDICTOR=='PRCP' or PREDICTOR=='UQ' or PREDICTOR=='VQ':
@@ -119,7 +119,7 @@ def setup_params(PREDICTOR,PREDICTAND,obs,obs_source,MOS,tini,tend):
 	    obs_source = 'home/.xchourio/.ACToday/.CHL/.prcp'
 	    hdate_last = 2019
 	elif obs == 'userdef':
-	    obs_source = obs_source
+	    obs_source = ''
 	else:
 	    print ("Obs option is invalid")
 
