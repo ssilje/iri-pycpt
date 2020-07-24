@@ -1,4 +1,4 @@
-#This is PyCPT_functions_seasonal.py (version1.7) -- 22 May 2020
+#This is PyCPT_functions_seasonal.py (version1.8) -- 24 Jul 2020
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Requires: CPTv16.5.2+
@@ -31,8 +31,11 @@ from cartopy import feature
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.ticker as ticker
+from matplotlib.ticker import Formatter, MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap
+from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 import fileinput
 
 
@@ -262,6 +265,8 @@ def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2):
 		pl.ylabels_left = False
 		pl.xformatter = LONGITUDE_FORMATTER
 		pl.yformatter = LATITUDE_FORMATTER
+		pl.xlocator = ticker.MaxNLocator(4)
+		pl.ylocator = ticker.MaxNLocator(4)
 		ax.add_feature(states_provinces, edgecolor='gray')
 	plt.show()
 
@@ -364,6 +369,8 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		pl.ylabels_right = False
 		pl.xformatter = LONGITUDE_FORMATTER
 		pl.yformatter = LATITUDE_FORMATTER
+		pl.xlocator = ticker.MaxNLocator(4)
+		pl.ylocator = ticker.MaxNLocator(4)
 		ax.add_feature(states_provinces, edgecolor='gray')
 		ax.set_ybound(lower=lati, upper=late)
 
@@ -372,7 +379,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		#if ax.is_first_col():
 		ax.set_ylabel(model, rotation=90)
 		if k==1:
-			ax.text(-0.35,0.5,'Obs',rotation=90,fontsize=9.2,verticalalignment='center', transform=ax.transAxes)
+			ax.text(-0.35,0.5,'Obs',rotation=90,verticalalignment='center', transform=ax.transAxes)
 
 	nrow=0
 	for model in models:
@@ -397,7 +404,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			ax.add_feature(feature.LAND)
 			ax.add_feature(feature.COASTLINE)
 			if k == (nrow*nsea)+1:
-				ax.text(-0.35,0.5,model,rotation=90,fontsize=9.2,verticalalignment='center', transform=ax.transAxes)
+				ax.text(-0.35,0.5,model,rotation=90,verticalalignment='center', transform=ax.transAxes)
 
 
 			#tick_spacing=0.5
@@ -411,9 +418,14 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			pl.xlabels_bottom = False
 			pl.xformatter = LONGITUDE_FORMATTER
 			pl.yformatter = LATITUDE_FORMATTER
+			pl.xlocator = ticker.MaxNLocator(4)
+			pl.ylocator = ticker.MaxNLocator(4)
 			ax.add_feature(states_provinces, edgecolor='gray')
+			lon_formatter = LongitudeFormatter(number_format='.2f') #LongitudeFormatter(degree_symbol='')
+			lat_formatter = LatitudeFormatter(number_format='.2f' ) #LatitudeFormatter(degree_symbol='')
+			ax.xaxis.set_major_formatter(lon_formatter)
+			ax.yaxis.set_major_formatter(lat_formatter)
 			ax.set_ybound(lower=lati, upper=late)
-			ax.set_xbound(lower=loni, upper=lone)
 
 			if k > (nmods+1)*nsea-nsea:
 				pl.xlabels_bottom = True
@@ -476,7 +488,8 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 		for tar in mons:
 			kk=kk+1
 			k=k+1
-			mon=mo[kk] #mon=mo[tgts.index(tar)]
+			#mon=mo[kk]
+			mon=mo[tgts.index(tar)]
 			#Read grads binary file size H, W
 			with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_'+score+'_'+tar+'_'+mon+'.ctl', "r") as fp:
 				for line in lines_that_contain("XDEF", fp):
@@ -492,7 +505,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 			ax = plt.subplot(nmods,nsea, k, projection=ccrs.PlateCarree())
 			ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
 			if k == (nrow*nsea)+1:
-				ax.text(-0.35,0.5,model,rotation=90,fontsize=9.2,verticalalignment='center', transform=ax.transAxes)
+				ax.text(-0.35,0.5,model,rotation=90,verticalalignment='center', transform=ax.transAxes)
 
 			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 			states_provinces = feature.NaturalEarthFeature(
@@ -518,6 +531,14 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 				pl.xlabels_bottom = True
 			pl.xformatter = LONGITUDE_FORMATTER
 			pl.yformatter = LATITUDE_FORMATTER
+			pl.xlocator = ticker.MaxNLocator(4)
+			pl.ylocator = ticker.MaxNLocator(4)
+			lon_formatter = LongitudeFormatter(number_format='.2f' ) #LongitudeFormatter(degree_symbol='')
+			lat_formatter = LatitudeFormatter(number_format='.2f' ) #LatitudeFormatter(degree_symbol='')
+			ax.xaxis.set_major_formatter(lon_formatter)
+			ax.yaxis.set_major_formatter(lat_formatter)
+			ax.xaxis.set_major_locator(plt.MaxNLocator(4))
+			ax.yaxis.set_major_locator(plt.MaxNLocator(4))
 			ax.add_feature(states_provinces, edgecolor='gray')
 			ax.set_ybound(lower=lati, upper=late)
 
@@ -568,21 +589,21 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 				if score == '2AFC':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=0,vmax=100,
-					cmap=plt.cm.bwr,
+					cmap=discrete_cmap(11, 'bwr'),
 					transform=ccrs.PlateCarree())
 					label = '2AFC (%)'
 
 				if score == 'RocAbove' or score=='RocBelow':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=0,vmax=1,
-					cmap=plt.cm.bwr,
+					cmap=discrete_cmap(11, 'bwr'),
 					transform=ccrs.PlateCarree())
 					label = 'ROC area'
 
 				if score == 'Spearman' or score=='Pearson':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=-1,vmax=1,
-					cmap=plt.cm.bwr,
+					cmap=discrete_cmap(11, 'bwr'),
 					transform=ccrs.PlateCarree())
 					label = 'Correlation'
 
@@ -601,11 +622,11 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 					label = 'GROC (probabilistic)'
 
 				if score=='Ignorance':
-					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
-					vmin=0,vmax=vma,
-					cmap=discrete_cmap(20, 'jet'),
+					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var/1.5849,
+					vmin=0.6,vmax=1.4,
+					cmap=discrete_cmap(9, 'bwr'),
 					transform=ccrs.PlateCarree())
-					label = 'Ignorance (all categories)'
+					label = 'Ignorance Skill Score (all categories)'
 
 			f.close()
 
@@ -680,6 +701,11 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 		lati: southern latitude
 		late: northern latitude
 		title: title
+
+	Output
+
+	EXAMPLES
+
 	"""
 	#Need this score to be defined by the calibration method!!!
 	score = 'CCAFCST_P'
@@ -732,9 +758,16 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 				pl2.xlabels_top = False
 				pl2.ylabels_left = True
 				pl2.ylabels_right = False
-				pl2.xformatter = LONGITUDE_FORMATTER
-				pl2.yformatter = LATITUDE_FORMATTER
-				ax2.add_feature(states_provinces, edgecolor='gray')
+				pl.xformatter = LONGITUDE_FORMATTER
+				pl.yformatter = LATITUDE_FORMATTER
+				pl.xlocator = ticker.MaxNLocator(4)
+				pl.ylocator = ticker.MaxNLocator(4)
+				ax.add_feature(states_provinces, edgecolor='gray')
+				lon_formatter = LongitudeFormatter(number_format='.2f' ) #LongitudeFormatter(degree_symbol='')
+				lat_formatter = LatitudeFormatter(number_format='.2f' ) #LatitudeFormatter(degree_symbol='')
+				ax.xaxis.set_major_formatter(lon_formatter)
+				ax.yaxis.set_major_formatter(lat_formatter)
+				ax.set_ybound(lower=lati, upper=late)
 				ax2.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
 
 				#ax2.set_ybound(lower=lati, upper=late)
@@ -878,14 +911,20 @@ def pltmapff(models,predictand,thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mp
 		pl.ylabels_right = False
 		pl.xformatter = LONGITUDE_FORMATTER
 		pl.yformatter = LATITUDE_FORMATTER
+		pl.xlocator = ticker.MaxNLocator(4)
+		pl.ylocator = ticker.MaxNLocator(4)
 		ax.add_feature(states_provinces, edgecolor='gray')
+		lon_formatter = LongitudeFormatter(number_format='.2f' ) #LongitudeFormatter(degree_symbol='')
+		lat_formatter = LatitudeFormatter(number_format='.2f' ) #LatitudeFormatter(degree_symbol='')
+		ax.xaxis.set_major_formatter(lon_formatter)
+		ax.yaxis.set_major_formatter(lat_formatter)
 		ax.set_ybound(lower=lati, upper=late)
 		CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), fprob,
 			vmin=0,vmax=100,
 			cmap=plt.cm.bwr,
 			transform=ccrs.PlateCarree())
 		label = 'Probability (%) of Exceedance'
-		ax.text(-0.2,0.5,model,rotation=90,fontsize=9.2,verticalalignment='center', transform=ax.transAxes)
+		ax.text(-0.2,0.5,model,rotation=90,verticalalignment='center', transform=ax.transAxes)
 
 
 		#plt.autoscale(enable=True)
@@ -1404,7 +1443,7 @@ def GetObs(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs_source, hdate_
 		elif obs_source=='ANACAFE':
 			url='http://iridl.ldeo.columbia.edu/IRIONLY/home/.xchourio/.ACToday/.COFFEE/.GUATEMALA/.ANUAL/.1989_2015/.Index_C/T/%28'+tar+'%29/seasonalAverage/-999/setmissing_value/%5B%5D%5BT%5Dcptv10.tsv'
 		else:
-			url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/(1%20Jan%20'+str(tini)+')/(31%20Dec%20'+str(tend)+')/RANGE/T/%28'+tar+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
+			url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/(1%20Jan%20'+str(tini)+')/(31%20Dec%20'+str(tend)+')/RANGE/T/%28'+tar+'%20'+str(tini)+'-'+str(tend)+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
 
 		print("\n Obs (Rainfall) data URL: \n\n "+url)
 		get_ipython().system("curl -k '"+url+"' > obs_"+predictand+"_"+tar+".tsv")
@@ -1935,7 +1974,7 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 
 		# Probabilistic skill maps
 		f.write("437\n")
-		# save Ranked Probability Skill Score (all cats)
+		# save GROC (all cats)
 		f.write("131\n")
 		file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_GROC_'+tar+'_'+mon+'\n'
 		f.write(file)
