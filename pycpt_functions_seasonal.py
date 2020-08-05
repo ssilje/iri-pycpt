@@ -1,4 +1,4 @@
-#This is PyCPT_functions_seasonal.py (version1.8) -- 24 Jul 2020
+#This is PyCPT_functions_seasonal.py (version1.8) -- 6 Aug 2020
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Requires: CPTv16.5.2+
@@ -1607,7 +1607,7 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 			f.write(file)
 			#Start forecast:
 			f.write("223\n")
-			if monf=="Dec":
+			if monf=="Dec":  #for multi-seasons, we need to add a better approach here AGMS
 				f.write(str(fyr+1)+"\n")
 			else:
 				f.write(str(fyr)+"\n")
@@ -1639,11 +1639,17 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 		# X training period
 		f.write("4\n")
 		# First year of X training period
-		f.write(str(tini)+'\n')
+		if monf=="Dec":
+			f.write(str(tini+1)+'\n')
+		else:
+			f.write(str(tini)+'\n')
 		# Y training period
 		f.write("5\n")
 		# First year of Y training period
-		f.write(str(tini)+'\n')
+		if monf=="Dec":
+			f.write(str(tini+1)+'\n')
+		else:
+			f.write(str(tini)+'\n')
 
 		# Goodness index
 		f.write("531\n")
