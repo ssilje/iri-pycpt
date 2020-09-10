@@ -5,8 +5,6 @@
 # AWR: edits made 20-Mar-2020: (1) indentation errors fixed; (2) ‘mpref’ argument to Prepfiles & GetForecast (L131, L143, L166, L1648). Argument added to calling program too (PyCPT_s2sv1.6.ipynb); (3) added mpref if-statement to GetForecasts (L1672) to only get the individual ensemble members for noMOS; (4) Revised dictionary entry for CFSv2 *forecast* file from S2S database (L1659)
 
 
-#I love the IRI
-
 import os
 import warnings
 import struct
