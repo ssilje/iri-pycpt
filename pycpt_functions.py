@@ -1,4 +1,4 @@
-#This is PyCPT_functions.py (version1.8) -- 23 Jun 2020
+#This is PyCPT_functions.py (version1.8) -- 18 Sep 2020
 #Authors: ÁG Muñoz (agmunoz@iri.columbia.edu), AW Robertson (awr@iri.columbia.edu), T Turkington (NEA), Bohar Singh, SJ Mason
 #Notes: be sure it matches version of PyCPT
 #Log: see version.log in GitHub
@@ -384,7 +384,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 				label = 'Ignorance (all categories)'
 		f.close()
 	plt.subplots_adjust(hspace=0)
-	plt.subplots_adjust(bottom=0.15, top=0.9)
+	plt.subplots_adjust(bottom=0.20, top=0.9)
 	cax  = plt.axes([0.2, 0.08, 0.6, 0.04])
 	cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 	cbar.set_label(label) #, rotation=270)
@@ -1545,8 +1545,8 @@ def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nl
 		#dictionary:
 #		dic = { 'CFSv2': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L1/'+str(day1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/-'+str(nlag-1)+'/1/0/shiftdatashort/%5BS_lag/M%5Daverage/3./mul/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.control/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L1/'+str(day1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/-'+str(nlag-1)+'/1/0/shiftdatashort/%5BS_lag%5Daverage/add/4./div/S/('+training_season+')/VALUES/S/'+str(hstep)+'/STEP/dup/S/npts//I/exch/NewIntegerGRID/replaceGRID/dup/I/5/splitstreamgrid/%5BI2%5Daverage/sub/I/3/-1/roll/.S/replaceGRID/L1/S/add/0/RECHUNK//name//T/def/2/%7Bexch%5BL1/S%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/c://name//water_density/def/998/%28kg/m3%29/:c/div//mm/unitconvert//name/(tp)/def/grid://name/%28T%29/def//units/%28months%20since%201960-01-01%29/def//standard_name/%28time%29/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/3001/ensotime/:grid/use_as_grid//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
 		dic = { 'CFSv2': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L1/'+str(day1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/-'+str(nlag-1)+'/1/0/shiftdatashort/%5BS_lag/M%5Daverage/3./mul/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.control/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L1/'+str(day1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/-'+str(nlag-1)+'/1/0/shiftdatashort/%5BS_lag%5Daverage/add/4./div/S/('+mon+')/VALUES/S/'+str(hstep)+'/STEP/dup/S/npts//I/exch/NewIntegerGRID/replaceGRID/dup/I/5/splitstreamgrid/%5BI2%5Daverage/sub/I/3/-1/roll/.S/replaceGRID/L1/S/add/0/RECHUNK//name//T/def/2/%7Bexch%5BL1/S%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/c://name//water_density/def/998/%28kg/m3%29/:c/div//mm/unitconvert//name/(tp)/def/grid://name/%28T%29/def//units/%28months%20since%201960-01-01%29/def//standard_name/%28time%29/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/3001/ensotime/:grid/use_as_grid//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
-				'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%201%20'+mon+'%20'+str(fyr)+')%20(2300%2028%20'+mon+'%20'+str(fyr)+')/RANGE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
-				'ECMWFrt': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(last%206%20'+str(nwi)+'%20mul%20sub)%20(last)/RANGE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+				'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%201%20'+mon+'%20'+str(fyr)+')%20(2300%2028%20'+mon+'%20'+str(fyr)+')/RANGE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(fyr-1)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+				'ECMWFrt': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(last%206%20'+str(nwi)+'%20mul%20sub)%20(last)/RANGE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(fyr-1)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
 				'GEFS':
 'https://iridl.ldeo.columbia.edu/SOURCES/.Models/.SubX/.EMC/.GEFS/.hindcast/.pr/S/(0000%206%20Jan%201999)/(0000%2028%20Dec%202015)/RANGEEDGES/S/(days%20since%201999-01-01)/streamgridunitconvert/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/RANGEEDGES/%5BM%5Daverage/L/'+str(nday)+'/runningAverage/SOURCES/.Models/.SubX/.EMC/.GEFS/.hindcast/.dc9915/.pr/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/RANGEEDGES/L/'+str(nday)+'/runningAverage/S/(T)/renameGRID/pentadmean/T/(S)/renameGRID/%5BS%5DregridLinear/sub/S/('+training_season+')/VALUES/L/removeGRID/S/(T)/renameGRID/c%3A/0.001/(m3%20kg-1)/%3Ac/mul/c%3A/1000/(mm%20m-1)/%3Ac/mul/c%3A/86400/(s%20day-1)/%3Ac/mul/c%3A/7.0//units//days/def/%3Ac/mul/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/2301/ensotime/%3Agrid/use_as_grid/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
 		}
@@ -2576,77 +2576,77 @@ def CPTscript(mon,fday,lit,liti,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fpref
 		f.write("0\n")
 
 		if MOS=='CCA' or MOS=='PCR':
-			###########PFV --Added by AGM in version 1.5
-			#Compute and write retrospective forecasts for prob skill assessment.
-			#Re-define forecas file
-			f.write("3\n")
-			if rainfall_frequency:
-				file='../input/model_precip_'+mon+'_wk'+str(wk)+'.tsv\n'  #in the future: use model freq
-			else:
-				file='../input/model_precip_'+mon+'_wk'+str(wk)+'.tsv\n'
-			f.write(file)
-			#Forecast period settings
-			f.write("6\n")
-			# First year to forecast. Save ALL forecasts (for "retroactive" we should only assess second half)
-			f.write("1901\n")
-			#Number of forecasts option
-			f.write("9\n")
-			# Number of reforecasts to produce
-			f.write("160\n")
-			# Change to ASCII format to re0use in CPT
-			f.write("131\n")
-			# ASCII format
-			f.write("2\n")
-			# Probabilistic (3 categories) maps
-			f.write("455\n")
-			# Output results
-			f.write("111\n")
-			# Forecast probabilities --Note change in name for reforecasts:
-			f.write("501\n")
-			file='../output/'+fprefix+'_'+mpref+'RFCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			#502 # Forecast odds
-			#Exit submenu
-			f.write("0\n")
-
-			# Close X file so we can access the PFV option
-			f.write("121\n")
-			f.write("Y\n")  #Yes to cleaning current results:# WARNING:
-			#Select Probabilistic Forecast Verification (PFV)
-			f.write("621\n")
-			# Opens X input file
-			f.write("1\n")
-			file='../output/'+fprefix+'_'+mpref+'RFCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.txt\n'
-			f.write(file)
-			# Nothernmost latitude
-			f.write(str(nla2)+'\n')
-			# Southernmost latitude
-			f.write(str(sla2)+'\n')
-			# Westernmost longitude
-			f.write(str(wlo2)+'\n')
-			# Easternmost longitude
-			f.write(str(elo2)+'\n')
-
-			f.write("5\n")
-			# First year of the PFV
-			# for "retroactive" only second half of the entire period should be used --this value is for ECMWF only)
-			fypfv=1901+lit
-			f.write(str(fypfv)+'\n')
-			#f.write("1901\n")
-
-			#Verify
-			f.write("313\n")
-
-			#Reliability diagram
-			f.write("431\n")
-			f.write("Y\n") #yes, save results to a file
-			file='../output/'+fprefix+'_'+mpref+'RFCST_reliabdiag_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.txt\n'
-			f.write(file)
-
-			# select output format -- GrADS, so we can plot it in Python
-			f.write("131\n")
-			# GrADS format
-			f.write("3\n")
+			# ###########PFV --Added by AGM in version 1.5
+			# #Compute and write retrospective forecasts for prob skill assessment.
+			# #Re-define forecas file
+			# f.write("3\n")
+			# if rainfall_frequency:
+			# 	file='../input/model_precip_'+mon+'_wk'+str(wk)+'.tsv\n'  #in the future: use model freq
+			# else:
+			# 	file='../input/model_precip_'+mon+'_wk'+str(wk)+'.tsv\n'
+			# f.write(file)
+			# #Forecast period settings
+			# f.write("6\n")
+			# # First year to forecast. Save ALL forecasts (for "retroactive" we should only assess second half)
+			# f.write("1901\n")
+			# #Number of forecasts option
+			# f.write("9\n")
+			# # Number of reforecasts to produce
+			# f.write("160\n")
+			# # Change to ASCII format to re0use in CPT
+			# f.write("131\n")
+			# # ASCII format
+			# f.write("2\n")
+			# # Probabilistic (3 categories) maps
+			# f.write("455\n")
+			# # Output results
+			# f.write("111\n")
+			# # Forecast probabilities --Note change in name for reforecasts:
+			# f.write("501\n")
+			# file='../output/'+fprefix+'_'+mpref+'RFCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+			# f.write(file)
+			# #502 # Forecast odds
+			# #Exit submenu
+			# f.write("0\n")
+			#
+			# # Close X file so we can access the PFV option
+			# f.write("121\n")
+			# f.write("Y\n")  #Yes to cleaning current results:# WARNING:
+			# #Select Probabilistic Forecast Verification (PFV)
+			# f.write("621\n")
+			# # Opens X input file
+			# f.write("1\n")
+			# file='../output/'+fprefix+'_'+mpref+'RFCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.txt\n'
+			# f.write(file)
+			# # Nothernmost latitude
+			# f.write(str(nla2)+'\n')
+			# # Southernmost latitude
+			# f.write(str(sla2)+'\n')
+			# # Westernmost longitude
+			# f.write(str(wlo2)+'\n')
+			# # Easternmost longitude
+			# f.write(str(elo2)+'\n')
+			#
+			# f.write("5\n")
+			# # First year of the PFV
+			# # for "retroactive" only second half of the entire period should be used --this value is for ECMWF only)
+			# fypfv=1901+lit
+			# f.write(str(fypfv)+'\n')
+			# #f.write("1901\n")
+			#
+			# #Verify
+			# f.write("313\n")
+			#
+			# #Reliability diagram
+			# f.write("431\n")
+			# f.write("Y\n") #yes, save results to a file
+			# file='../output/'+fprefix+'_'+mpref+'RFCST_reliabdiag_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.txt\n'
+			# f.write(file)
+			#
+			# # select output format -- GrADS, so we can plot it in Python
+			# f.write("131\n")
+			# # GrADS format
+			# f.write("3\n")
 
 			# Probabilistic skill maps
 			f.write("437\n")
