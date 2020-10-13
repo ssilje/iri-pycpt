@@ -1,4 +1,4 @@
-#This is PyCPT_functions.py (version1.9) -- 9 Oct 2020
+#This is PyCPT_functions.py (version1.9) -- 13 Oct 2020
 #Authors: ÁG Muñoz (agmunoz@iri.columbia.edu), AW Robertson (awr@iri.columbia.edu), T Turkington (NEA), Bohar Singh, SJ Mason
 #Notes: be sure it matches version of PyCPT
 #Log: see version.log in GitHub
@@ -1372,10 +1372,10 @@ def readNetCDF_predictand(infile,outfile, predictand, wlo2, elo2, sla2, nla2, ta
 			f.write("cpt:field="+vari+", cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
 		else:
 			f.write("cpt:field="+vari+", cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-		np.savetxt(f, Xarr[0:-1], fmt="%.3f",newline='\t')
+		np.savetxt(f, Xarr[0:-1], fmt="%.6f",newline='\t')
 		f.write("\n") #next line
 		for iy in range(H):
-			np.savetxt(f,np.r_[Yarr[iy],var[it,iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+			np.savetxt(f,np.r_[Yarr[iy],var[it,iy,0:]],fmt="%.6f", newline='\t')  #excise extra line
 			f.write("\n") #next line
 	f.close()
 
@@ -1448,10 +1448,10 @@ def readNetCDF_Hindcasts(infile, outfile, wlo1, elo1, sla1, nla1, tgti, tgtf, mo
 			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
 		else:
 			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-	np.savetxt(f, Xarr, fmt="%.3f",newline='\t')
+	np.savetxt(f, Xarr, fmt="%.6f",newline='\t')
 	f.write("\n") #next line
 	for iy in range(H):
-		np.savetxt(f,np.r_[Yarr[iy],var_N2S[it,iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+		np.savetxt(f,np.r_[Yarr[iy],var_N2S[it,iy,0:]],fmt="%.6f", newline='\t')  #excise extra line
 		f.write("\n") #next line
 	f.close()
 
@@ -1524,10 +1524,10 @@ def readNetCDF_Forecast(infile, outfile, monf, fyr, tgti, tgtf, tar, wlo1, elo1,
                         f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
                 else:
                         f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-        np.savetxt(f, Xarr, fmt="%.3f",newline='\t')
+        np.savetxt(f, Xarr, fmt="%.6f",newline='\t')
         f.write("\n") #next line
         for iy in range(H):
-                np.savetxt(f,np.r_[Yarr[iy],var_N2S[iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+                np.savetxt(f,np.r_[Yarr[iy],var_N2S[iy,0:]],fmt="%.6f", newline='\t')  #excise extra line
                 f.write("\n") #next line
         f.close()
 

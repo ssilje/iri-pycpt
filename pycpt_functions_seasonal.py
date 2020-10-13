@@ -1,4 +1,4 @@
-#This is PyCPT_functions_seasonal.py (version1.9) -- 29 Sep 2020
+#This is PyCPT_functions_seasonal.py (version1.9) -- 13 Oct 2020
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Requires: CPTv16.5.2+
@@ -207,7 +207,7 @@ def PrepFiles(fprefix, predictand, threshold_pctle, tini,tend, wlo1, wlo2,elo1, 
 		print('----------------------------------------------')
 		GetForecast_TMIN(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea)
 		print('Forecasts file ready to go')
-		print('----------------------------------------------')		
+		print('----------------------------------------------')
 	elif fprefix=='UQ':
 		GetHindcasts_UQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea)
 		print('Hindcasts file ready to go')
@@ -1213,10 +1213,10 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 # 			f.write("cpt:field="+vari+", cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
 # 		else:
 # 			f.write("cpt:field="+vari+", cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-# 		np.savetxt(f, Xarr[0:-1], fmt="%.3f",newline='\t')
+# 		np.savetxt(f, Xarr[0:-1], fmt="%.6f",newline='\t')
 # 		f.write("\n") #next line
 # 		for iy in range(H):
-# 			np.savetxt(f,np.r_[Yarr[iy],var[it,iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+# 			np.savetxt(f,np.r_[Yarr[iy],var[it,iy,0:]],fmt="%.6f", newline='\t')  #excise extra line
 # 			f.write("\n") #next line
 # 	f.close()
 #
@@ -1289,10 +1289,10 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 # 			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
 # 		else:
 # 			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-# 	np.savetxt(f, Xarr, fmt="%.3f",newline='\t')
+# 	np.savetxt(f, Xarr, fmt="%.6f",newline='\t')
 # 	f.write("\n") #next line
 # 	for iy in range(H):
-# 		np.savetxt(f,np.r_[Yarr[iy],var_N2S[it,iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+# 		np.savetxt(f,np.r_[Yarr[iy],var_N2S[it,iy,0:]],fmt="%.6f", newline='\t')  #excise extra line
 # 		f.write("\n") #next line
 # 	f.close()
 #
@@ -1365,10 +1365,10 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 #                         f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
 #                 else:
 #                         f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-#         np.savetxt(f, Xarr, fmt="%.3f",newline='\t')
+#         np.savetxt(f, Xarr, fmt="%.6f",newline='\t')
 #         f.write("\n") #next line
 #         for iy in range(H):
-#                 np.savetxt(f,np.r_[Yarr[iy],var_N2S[iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+#                 np.savetxt(f,np.r_[Yarr[iy],var_N2S[iy,0:]],fmt="%.6f", newline='\t')  #excise extra line
 #                 f.write("\n") #next line
 #         f.close()
 
@@ -1631,7 +1631,7 @@ def GetObs_RFREQ(predictand, tini,tend,wlo2, elo2, sla2, nla2, wetday_threshold,
 		#Need to work on it
 		if threshold_pctle:
 				url='https://iridl.ldeo.columbia.edu/'+obs_source+'/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/T/(1%20Jan%20'+str(tini)+')/(31%20Dec%20'+str(end)+')/RANGEEDGES/%5BT%5Dpercentileover/'+str(wetday_threshold)+'/flagle/T/'+str(nday)+'/runningAverage/'+str(nday)+'/mul/T/2/index/.T/SAMPLE/nip/dup/T/npts//I/exch/NewIntegerGRID/replaceGRID/dup/I/5/splitstreamgrid/%5BI2%5Daverage/sub/I/3/-1/roll/.T/replaceGRID/-999/setmissing_value/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/3001/ensotime/%3Agrid/use_as_grid//name/(fp)/def//units/(unitless)/def//long_name/(rainfall_freq)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz'
-                               
+
 		else:
 				#url='https://iridl.ldeo.columbia.edu/'+obs_source+'/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/'+str(wetday_threshold)+'/flagge/dup/pentadmean/%5BT%5D/regridLinear/sub/T/'+str(nday)+'/runningAverage/c%3A/7.0//units//days/def/%3Ac/mul/T/2/index/.T/SAMPLE/nip/dup/T/npts//I/exch/NewIntegerGRID/replaceGRID/I/3/-1/roll/.T/replaceGRID/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/3001/ensotime/%3Agrid/use_as_grid/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz'
 #				url='http://datoteca.ole2.org/SOURCES/.UEA/.CRU/.TS4p0/.monthly/.wet/lon/%28X%29/renameGRID/lat/%28Y%29/renameGRID/time/%28T%29/renameGRID/T/(1%20Jan%20'+str(tini)+')/(31%20Dec%20'+str(end)+')/RANGE/T/%28'+tar+'%29/seasonalAverage/Y/'+str(sla2)+'/'+str(nla2)+'/RANGEEDGES/X/'+str(wlo2)+'/'+str(elo2)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
@@ -1662,7 +1662,7 @@ def GetForecast(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force
 #		}
 		# calls curl to download data
 #		url=dic[model]
-		url=eval(dic_sea[model+'_fcst_PRCP']) 
+		url=eval(dic_sea[model+'_fcst_PRCP'])
 		print("\n Forecast URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_PRCP_"+tar+"_ini"+monf+str(fyr)+".tsv")
 def GetForecast_T2M(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea):
@@ -2335,10 +2335,10 @@ def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,mo
 		else:
 			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Ti)+"-"+S+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
 		#f.write("\t")
-		np.savetxt(f, Xarr[0:-1], fmt="%.3f",newline='\t') #f.write(str(Xarr)[1:-1])
+		np.savetxt(f, Xarr[0:-1], fmt="%.6f",newline='\t') #f.write(str(Xarr)[1:-1])
 		f.write("\n") #next line
 		for iy in range(H):
 			#f.write(str(Yarr[iy]) + "\t" + str(var[it,iy,0:-1])[1:-1]) + "\n")
-			np.savetxt(f,np.r_[Yarr[iy+1],var[it,iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+			np.savetxt(f,np.r_[Yarr[iy+1],var[it,iy,0:]],fmt="%.6f", newline='\t')  #excise extra line
 			f.write("\n") #next line
 	f.close()
