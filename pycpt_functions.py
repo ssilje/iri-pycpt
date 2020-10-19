@@ -2609,77 +2609,77 @@ def CPTscript(mon,fday,lit,liti,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fpref
 		f.write("0\n")
 
 		if MOS=='CCA' or MOS=='PCR':
-			###########PFV --Added by AGM in version 1.5
-			#Compute and write retrospective forecasts for prob skill assessment.
-			#Re-define forecas file
-			f.write("3\n")
-			if rainfall_frequency:
-				file='../input/model_precip_'+mon+'_wk'+str(wk)+'.tsv\n'  #in the future: use model freq
-			else:
-				file='../input/model_precip_'+mon+'_wk'+str(wk)+'.tsv\n'
-			f.write(file)
-			#Forecast period settings
-			f.write("6\n")
-			# First year to forecast. Save ALL forecasts (for "retroactive" we should only assess second half)
-			f.write("1901\n")
-			#Number of forecasts option
-			f.write("9\n")
-			# Number of reforecasts to produce
-			f.write("160\n")
-			# Change to ASCII format to re0use in CPT
-			f.write("131\n")
-			# ASCII format
-			f.write("2\n")
-			# Probabilistic (3 categories) maps
-			f.write("455\n")
-			# Output results
-			f.write("111\n")
-			# Forecast probabilities --Note change in name for reforecasts:
-			f.write("501\n")
-			file='../output/'+fprefix+'_'+mpref+'RFCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			#502 # Forecast odds
-			#Exit submenu
-			f.write("0\n")
-
-			# Close X file so we can access the PFV option
-			f.write("121\n")
-			f.write("Y\n")  #Yes to cleaning current results:# WARNING:
-			#Select Probabilistic Forecast Verification (PFV)
-			f.write("621\n")
-			# Opens X input file
-			f.write("1\n")
-			file='../output/'+fprefix+'_'+mpref+'RFCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.txt\n'
-			f.write(file)
-			# Nothernmost latitude
-			f.write(str(nla2)+'\n')
-			# Southernmost latitude
-			f.write(str(sla2)+'\n')
-			# Westernmost longitude
-			f.write(str(wlo2)+'\n')
-			# Easternmost longitude
-			f.write(str(elo2)+'\n')
-
-			f.write("5\n")
-			# First year of the PFV
-			# for "retroactive" only second half of the entire period should be used --this value is for ECMWF only)
-			fypfv=1901+lit
-			f.write(str(fypfv)+'\n')
-			#f.write("1901\n")
-
-			#Verify
-			f.write("313\n")
-
-			#Reliability diagram
-			f.write("431\n")
-			f.write("Y\n") #yes, save results to a file
-			file='../output/'+fprefix+'_'+mpref+'RFCST_reliabdiag_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.txt\n'
-			f.write(file)
-
-			# select output format -- GrADS, so we can plot it in Python
-			f.write("131\n")
-			# GrADS format
-			f.write("3\n")
+			# ###########PFV --Added by AGM in version 1.5
+			# #Compute and write retrospective forecasts for prob skill assessment.
+			# #Re-define forecas file
+			# f.write("3\n")
+			# if rainfall_frequency:
+			# 	file='../input/model_precip_'+mon+'_wk'+str(wk)+'.tsv\n'  #in the future: use model freq
+			# else:
+			# 	file='../input/model_precip_'+mon+'_wk'+str(wk)+'.tsv\n'
+			# f.write(file)
+			# #Forecast period settings
+			# f.write("6\n")
+			# # First year to forecast. Save ALL forecasts (for "retroactive" we should only assess second half)
+			# f.write("1901\n")
+			# #Number of forecasts option
+			# f.write("9\n")
+			# # Number of reforecasts to produce
+			# f.write("160\n")
+			# # Change to ASCII format to re0use in CPT
+			# f.write("131\n")
+			# # ASCII format
+			# f.write("2\n")
+			# # Probabilistic (3 categories) maps
+			# f.write("455\n")
+			# # Output results
+			# f.write("111\n")
+			# # Forecast probabilities --Note change in name for reforecasts:
+			# f.write("501\n")
+			# file='../output/'+fprefix+'_'+mpref+'RFCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+			# f.write(file)
+			# #502 # Forecast odds
+			# #Exit submenu
+			# f.write("0\n")
+			#
+			# # Close X file so we can access the PFV option
+			# f.write("121\n")
+			# f.write("Y\n")  #Yes to cleaning current results:# WARNING:
+			# #Select Probabilistic Forecast Verification (PFV)
+			# f.write("621\n")
+			# # Opens X input file
+			# f.write("1\n")
+			# file='../output/'+fprefix+'_'+mpref+'RFCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.txt\n'
+			# f.write(file)
+			# # Nothernmost latitude
+			# f.write(str(nla2)+'\n')
+			# # Southernmost latitude
+			# f.write(str(sla2)+'\n')
+			# # Westernmost longitude
+			# f.write(str(wlo2)+'\n')
+			# # Easternmost longitude
+			# f.write(str(elo2)+'\n')
+			#
+			# f.write("5\n")
+			# # First year of the PFV
+			# # for "retroactive" only second half of the entire period should be used --this value is for ECMWF only)
+			# fypfv=1901+lit
+			# f.write(str(fypfv)+'\n')
+			# #f.write("1901\n")
+			#
+			# #Verify
+			# f.write("313\n")
+			#
+			# #Reliability diagram
+			# f.write("431\n")
+			# f.write("Y\n") #yes, save results to a file
+			# file='../output/'+fprefix+'_'+mpref+'RFCST_reliabdiag_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.txt\n'
+			# f.write(file)
+			#
+			# # select output format -- GrADS, so we can plot it in Python
+			# f.write("131\n")
+			# # GrADS format
+			# f.write("3\n")
 
 			# Probabilistic skill maps
 			f.write("437\n")
