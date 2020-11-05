@@ -336,7 +336,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			var = np.transpose(A.reshape((W, H), order='F'))
 			#define colorbars, depending on each score	--This can be easily written as a function
 			if score == '2AFC':
-				var[var<0]=np.nan #only positive values
+				var[var==-999.]=np.nan #only sensible values
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=0,vmax=100,
 				cmap=discrete_cmap(11, 'bwr'),
@@ -344,7 +344,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 				label = '2AFC (%)'
 
 			if score == 'RocAbove' or score=='RocBelow':
-				var[var<0]=np.nan #only positive values
+				var[var==-999.]=np.nan #only sensible values
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=0,vmax=1,
 				cmap=discrete_cmap(11, 'bwr'),
@@ -352,7 +352,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 				label = 'ROC area'
 
 			if score == 'Spearman' or score=='Pearson':
-				var[var<-1.]=np.nan #only sensible values
+				var[var==-999.]=np.nan #only sensible values
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=-1,vmax=1,
 				cmap=discrete_cmap(11, 'bwr'),
@@ -363,12 +363,12 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 				var[var==-999.]=np.nan #only sensible values
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=-20,vmax=20,
-				cmap=discrete_cmap(20, 'bwr'),
+				cmap=discrete_cmap(11, 'bwr'),
 				transform=ccrs.PlateCarree())
 				label = 'RPSS (all categories)'
 
 			if score=='GROC':
-				var[var<-1.]=np.nan #only sensible values
+				var[var==-999.]=np.nan #only sensible values
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=0,vmax=100,
 				cmap=discrete_cmap(11, 'bwr'),
@@ -376,12 +376,69 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 				label = 'GROC (probabilistic)'
 
 			if score=='Ignorance':
-				var[var<-1.]=np.nan #only sensible values
+				var[var==-999.]=np.nan #only sensible values
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				vmin=0.8,vmax=2.,
+				cmap=discrete_cmap(20, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'Ignorance (all categories)'
+
+			# if score=='Ignorance':  #This is really the Ignorance Skill Score (Ignorance normalized by log2(3))
+			# 	var[var==-999.]=np.nan #only sensible values
+			# 	CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var/1.5849,
+			# 	vmin=.8,vmax=1.2,
+			# 	cmap=discrete_cmap(11, 'bwr'),
+			# 	transform=ccrs.PlateCarree())
+			# 	label = 'Ignorance Skill Score (all categories)'
+
+			if score=='Ignorance_AN':
+				var[var==-999.]=np.nan #only sensible values
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				#vmin=1.,vmax=2.,
 				cmap=discrete_cmap(20, 'bwr'),
 				transform=ccrs.PlateCarree())
-				label = 'Ignorance (all categories)'
+				label = 'Ignorance (above normal)'
+
+			if score=='RelIgn_AN':
+				var[var==-999.]=np.nan #only sensible values
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				#vmin=1.,vmax=2.,
+				cmap=discrete_cmap(20, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'Reliability (Ignorance, above normal)'
+
+			if score=='ResIgn_AN':
+				var[var==-999.]=np.nan #only sensible values
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				#vmin=1.,vmax=2.,
+				cmap=discrete_cmap(20, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'Resolution (Ignorance, above normal)'
+
+			if score=='Ignorance_BN':
+				var[var==-999.]=np.nan #only sensible values
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				#vmin=1.,vmax=2.,
+				cmap=discrete_cmap(20, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'Ignorance (below normal)'
+
+			if score=='RelIgn_BN':
+				var[var==-999.]=np.nan #only sensible values
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				#vmin=1.,vmax=2.,
+				cmap=discrete_cmap(20, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'Reliability (Ignorance, below normal)'
+
+			if score=='ResIgn_BN':
+				var[var==-999.]=np.nan #only sensible values
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				#vmin=1.,vmax=2.,
+				cmap=discrete_cmap(20, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'Resolution (Ignorance, below normal)'
+
 		f.close()
 	plt.subplots_adjust(hspace=0)
 	plt.subplots_adjust(bottom=0.15, top=0.9)
@@ -2415,10 +2472,10 @@ def CPTscript(mon,fday,lit,liti,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fpref
 		# GrADS format
 		f.write("3\n")
 
-		# save goodness index
-		f.write("112\n")
-		file='../output/'+fprefix+'_'+mpref+'_Kendallstau_'+training_season+'_wk'+str(wk)+'\n'
-		f.write(file)
+		# # save goodness index
+		# f.write("112\n")
+		# file='../output/'+fprefix+'_'+mpref+'_Kendallstau_'+training_season+'_wk'+str(wk)+'\n'
+		# f.write(file)
 
 		## Cross-validation
 		#f.write("311\n")   #--deactivated
@@ -2681,21 +2738,69 @@ def CPTscript(mon,fday,lit,liti,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fpref
 			# # GrADS format
 			# f.write("3\n")
 
-			# Probabilistic skill maps
+			# Probabilistic skill maps (all cats)
 			f.write("437\n")
 			# save Ignorance (all cats)
 			f.write("101\n")
 			file='../output/'+fprefix+'_'+mpref+'_Ignorance_'+training_season+'_wk'+str(wk)+'\n'
 			f.write(file)
 
-			# Probabilistic skill maps
+			# Probabilistic skill maps (Above normal)
+			f.write("437\n")
+			# save Ignorance (Above normal)
+			f.write("201\n")
+			f.write("3\n") #3 is above normal
+			file='../output/'+fprefix+'_'+mpref+'_Ignorance_AN_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+
+			# Probabilistic skill maps (Above normal)
+			f.write("437\n")
+			# save Ignorance Reliability (Above normal)
+			f.write("202\n")
+			f.write("3\n") #3 is above normal
+			file='../output/'+fprefix+'_'+mpref+'_RelIgn_AN_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+
+			# Probabilistic skill maps (Above normal)
+			f.write("437\n")
+			# save Ignorance Resolution (Above normal)
+			f.write("203\n")
+			f.write("3\n") #3 is above normal
+			file='../output/'+fprefix+'_'+mpref+'_ResIgn_AN_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+
+			# Probabilistic skill maps (Below normal)
+			f.write("437\n")
+			# save Ignorance (Below normal)
+			f.write("201\n")
+			f.write("1\n") #1 is below normal
+			file='../output/'+fprefix+'_'+mpref+'_Ignorance_BN_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+
+			# Probabilistic skill maps (Below normal)
+			f.write("437\n")
+			# save Ignorance Reliability (Below normal)
+			f.write("202\n")
+			f.write("1\n") #1 is below normal
+			file='../output/'+fprefix+'_'+mpref+'_RelIgn_BN_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+
+			# Probabilistic skill maps (Below normal)
+			f.write("437\n")
+			# save Ignorance Resolution (Below normal)
+			f.write("203\n")
+			f.write("1\n") #3 is below normal
+			file='../output/'+fprefix+'_'+mpref+'_ResIgn_BN_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+
+			# Probabilistic skill maps (all cats)
 			f.write("437\n")
 			# save Ranked Probability Skill Score (all cats)
 			f.write("122\n")
 			file='../output/'+fprefix+'_'+mpref+'_RPSS_'+training_season+'_wk'+str(wk)+'\n'
 			f.write(file)
 
-			# Probabilistic skill maps
+			# Probabilistic skill maps (all cats)
 			f.write("437\n")
 			# save Ranked Probability Skill Score (all cats)
 			f.write("131\n")

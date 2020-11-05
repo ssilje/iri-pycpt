@@ -2278,7 +2278,22 @@ def NGensemble(models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
 
 		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
 		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+id+'_'+tar+'_'+monf+str(fyr)+'.dat','rb')
+		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+		for it in range(T):
+			#Now we read the field
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+			A0=np.fromfile(f,dtype='float32',count=numval)
+			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+			memb0[it,:,:]= np.transpose(A0.reshape((W, H), order='F'))
+
+		memb0[memb0==-999.]=np.nan #identify NaNs
+
+		ens[k,:,:,:]=memb0
+
+	# NextGen ensemble mean (perhaps try median too?)
 	NG=np.nanmean(ens, axis=0)  #axis 0 is ensemble member
+
 
 	#Now write output:
 	#writeCPT(NG,'../output/NextGen_'+fprefix+'_'+tar+'_ini'+mon+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
