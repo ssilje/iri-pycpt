@@ -1970,6 +1970,13 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 
 		# Build cross-validated model
 		f.write("311\n")   #In the seasonal case, training periods are usually too short to do retroactive analysis
+		#Retroactive for s2s, due to the large sample size - deactivated for CFSv2
+#		f.write("312\n")
+#		#Length of initial training period: (Just quits w/o error msg if 80>ntrain)
+#		f.write(str(lit)+'\n')
+#		#Update interval:
+#		f.write(str(liti)+'\n')   #--old comment from AGM: 80 for speeding up tests, change to 20 later (~same results so far with 20 or 80)
+
 
 		# save EOFs
 		if MOS=='CCA' or MOS=='PCR':
@@ -2108,7 +2115,7 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 			if MOS=="PCR" or MOS=="CCA":
 				f.write("0\n")
 			f.write("413\n")
-			# save 2AFC score  #special request of Chile
+			# save 2AFC score  #special request from Chile
 			f.write("3\n")
 			file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_2AFC_'+tar+'_'+monf+str(fyr)+'\n'
 			f.write(file)
