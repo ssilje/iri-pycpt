@@ -446,6 +446,175 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 	cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 	cbar.set_label(label) #, rotation=270)
 
+def plteofs(model,mode,M,loni,lone,lati,late,fprefix,mpref, training_season):
+	"""A simple function for ploting EOFs computed by CPT"""
+
+
+	if mpref=='None':
+		print('No EOFs are computed if MOS=None is used')
+		return
+
+	plt.figure(figsize=(20,5))
+	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
+
+	with open('../output/'+fprefix+'_'+mpref+'_EOFX_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+		for line in lines_that_contain("XDEF", fp):
+			W = int(line.split()[1])
+			XD = float(line.split()[4])
+
+	with open('../output/'+fprefix+'_'+mpref+'_EOFX_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+		for line in lines_that_contain("YDEF", fp):
+			H = int(line.split()[1])
+			YD= float(line.split()[4])
+
+	if mpref=='CCA':
+
+		with open('../output/'+fprefix+'_'+mpref+'_EOFY_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+			for line in lines_that_contain("XDEF", fp):
+				Wy = int(line.split()[1])
+				XDy= float(line.split()[4])
+		with open('../output/'+fprefix+'_'+mpref+'_EOFY_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+			for line in lines_that_contain("YDEF", fp):
+				Hy = int(line.split()[1])
+				YDy= float(line.split()[4])
+
+		eofy=np.empty([M,Hy,Wy])  #define array for later use
+
+	eofx=np.empty([M,H,W])  #define array for later use
+
+
+	ax = plt.subplot(2,1,1,projection=ccrs.PlateCarree()) #nmods+obs
+
+	if mpref=='CCA':  #skip if there are not predictand EOFs (e.g., PCR)
+		ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
+		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+		f=open('../output/'+fprefix+'_'+mpref+'_EOFY_'+training_season+'_wk'+str(wk)+'.dat','rb')
+		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+		for mo in range(M):
+			#Now we read the field
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize) #this if for each time/EOF stamp
+			A0=np.fromfile(f,dtype='float32',count=numval)
+			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+			eofy[mo,:,:]= np.transpose(A0.reshape((Wy, Hy), order='F'))
+
+		eofy[eofy==-999.]=np.nan #nans
+
+		CS=plt.pcolormesh(np.linspace(loni, loni+Wy*XDy,num=Wy), np.linspace(lati+Hy*YDy, lati, num=Hy), eofy[mode,:,:],
+		vmin=-.1,vmax=.1,
+		cmap=plt.cm.bwr,
+		transform=ccrs.PlateCarree())
+		label = 'EOF charges'
+
+		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+		states_provinces = feature.NaturalEarthFeature(
+			category='cultural',
+	#			name='admin_1_states_provinces_shp',
+			name='admin_0_countries',
+			scale='10m',
+			facecolor='none')
+
+		ax.add_feature(feature.LAND)
+		ax.add_feature(feature.COASTLINE)
+
+		#tick_spacing=0.5
+		#ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+
+		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+				linewidth=2, color='gray', alpha=0., linestyle='--')
+		pl.xlabels_top = False
+		pl.xlabels_bottom = False
+		pl.ylabels_left = True
+		pl.ylabels_right = False
+		pl.xformatter = LONGITUDE_FORMATTER
+		pl.yformatter = LATITUDE_FORMATTER
+		pl.xlocator = ticker.MaxNLocator(4)
+		pl.ylocator = ticker.MaxNLocator(4)
+		ax.add_feature(states_provinces, edgecolor='gray')
+		ax.set_ybound(lower=lati, upper=late)
+
+
+		#if ax.is_first_col():
+		ax.set_ylabel(model, rotation=90)
+
+		ax.text(-0.35,0.5,'Obs',rotation=90,verticalalignment='center', transform=ax.transAxes)
+
+
+		ax = plt.subplot(2,1, 2, projection=ccrs.PlateCarree()) #nmods+obs
+		if mpref=='PCR':
+			ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())  #EOF domains will look different between CCA and PCR if X and Y domains are different
+		else:
+			ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
+
+		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+		states_provinces = feature.NaturalEarthFeature(
+			category='cultural',
+	#		name='admin_1_states_provinces_shp',
+			name='admin_0_countries',
+			scale='10m',
+			facecolor='none')
+
+		ax.add_feature(feature.LAND)
+		ax.add_feature(feature.COASTLINE)
+		#if k == 2:
+		ax.text(-0.35,0.5,model,rotation=90,verticalalignment='center', transform=ax.transAxes)
+
+
+		#tick_spacing=0.5
+		#ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+
+		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+				linewidth=2, color='gray', alpha=0., linestyle='--')
+		pl.xlabels_top = False
+		pl.ylabels_left = True
+		pl.ylabels_right = False
+		pl.xlabels_bottom = False
+		pl.xformatter = LONGITUDE_FORMATTER
+		pl.yformatter = LATITUDE_FORMATTER
+		pl.xlocator = ticker.MaxNLocator(4)
+		pl.ylocator = ticker.MaxNLocator(4)
+		ax.add_feature(states_provinces, edgecolor='gray')
+		lon_formatter = LongitudeFormatter(number_format='.2f') #LongitudeFormatter(degree_symbol='')
+		lat_formatter = LatitudeFormatter(number_format='.2f' ) #LatitudeFormatter(degree_symbol='')
+		ax.xaxis.set_major_formatter(lon_formatter)
+		ax.yaxis.set_major_formatter(lat_formatter)
+		ax.set_ybound(lower=lati, upper=late)
+
+
+
+		#if ax.is_first_col():
+		ax.set_ylabel(model, rotation=90)
+
+		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+		f=open('../output/'+fprefix+'_'+mpref+'_EOFX_'+training_season+'_wk'+str(wk)+'.dat','rb')
+		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+		for mo in range(M):
+			#Now we read the field
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize) #this if for each time/EOF stamp
+			A0=np.fromfile(f,dtype='float32',count=numval)
+			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+			eofx[mo,:,:]= np.transpose(A0.reshape((W, H), order='F'))
+
+		eofx[eofx==-999.]=np.nan #nans
+
+		CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), eofx[mode,:,:],
+		vmin=-.1,vmax=.1,
+		cmap=plt.cm.bwr,
+		transform=ccrs.PlateCarree())
+		label = 'EOF charges'
+		plt.subplots_adjust(hspace=0)
+		#plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
+		#cbar_ax = plt.add_axes([0.85, 0.15, 0.05, 0.7])
+		#plt.tight_layout()
+
+		#plt.autoscale(enable=True)
+		plt.subplots_adjust(bottom=0.15, top=0.9)
+		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
+		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+		cbar.set_label(label) #, rotation=270)
+		f.close()
+
 def pltmapdiff(score,loni,lone,lati,late,fprefix,mpref1,mpref2,training_season, mon, fday, nwk):
 	"""A simple function for ploting differences of the skill scores
 
@@ -2494,6 +2663,24 @@ def CPTscript(mon,fday,lit,liti,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fpref
 			f.write(str(lit)+'\n')
 			#Update interval:
 			f.write(str(lit)+'\n')   #--80 for speeding up tests, change to 20 later (~same results so far with 20 or 80)
+
+		# save EOFs
+		if MOS=='CCA' or MOS=='PCR':
+			f.write("111\n")
+			#X EOF
+			f.write("302\n")
+			file='../output/'+fprefix+'_'+mpref+'_EOFX_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+			#Exit submenu
+			f.write("0\n")
+		if MOS=='CCA':
+			f.write("111\n")
+			#Y EOF
+			f.write("312\n")
+			file='../output/'+fprefix+'_'+mpref+'_EOFY_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+			#Exit submenu
+			f.write("0\n")
 
 		# cross-validated skill maps
 		f.write("413\n")
