@@ -1,4 +1,4 @@
-#This is PyCPT_functions.py (version1.9) -- 13 Oct 2020
+#This is PyCPT_functions.py (version1.9) -- 6 Nov 2020
 #Authors: ÁG Muñoz (agmunoz@iri.columbia.edu), AW Robertson (awr@iri.columbia.edu), T Turkington (NEA), Bohar Singh, SJ Mason
 #Notes: be sure it matches version of PyCPT
 #Log: see version.log in GitHub
@@ -18,9 +18,12 @@ import cartopy.crs as ccrs
 from cartopy import feature
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+import matplotlib.ticker as ticker
+from matplotlib.ticker import Formatter, MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap
+from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
-from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 from netCDF4 import Dataset
 
 
@@ -446,16 +449,15 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 	cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 	cbar.set_label(label) #, rotation=270)
 
-def plteofs(model,mode,M,loni,lone,lati,late,fprefix,mpref, training_season):
+def plteofs(model,mode,M,loni,lone,lati,late,fprefix,mpref,training_season,nwk, wki):
 	"""A simple function for ploting EOFs computed by CPT"""
-
 
 	if mpref=='None':
 		print('No EOFs are computed if MOS=None is used')
 		return
 
 	plt.figure(figsize=(20,5))
-	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
+	fig, ax = plt.subplots(figsize=(20,5),sharex=True,sharey=True)
 
 	with open('../output/'+fprefix+'_'+mpref+'_EOFX_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
@@ -2932,6 +2934,20 @@ def CPTscript(mon,fday,lit,liti,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fpref
 			file='../output/'+fprefix+'_'+mpref+'_Ignorance_'+training_season+'_wk'+str(wk)+'\n'
 			f.write(file)
 
+			# Probabilistic skill maps (all cats)
+			f.write("437\n")
+			# save Ranked Probability Skill Score (all cats)
+			f.write("122\n")
+			file='../output/'+fprefix+'_'+mpref+'_RPSS_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+
+			# Probabilistic skill maps (all cats)
+			f.write("437\n")
+			# save Ranked Probability Skill Score (all cats)
+			f.write("131\n")
+			file='../output/'+fprefix+'_'+mpref+'_GROC_'+training_season+'_wk'+str(wk)+'\n'
+			f.write(file)
+
 			# Probabilistic skill maps (Above normal)
 			f.write("437\n")
 			# save Ignorance (Above normal)
@@ -2978,20 +2994,6 @@ def CPTscript(mon,fday,lit,liti,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fpref
 			f.write("203\n")
 			f.write("1\n") #3 is below normal
 			file='../output/'+fprefix+'_'+mpref+'_ResIgn_BN_'+training_season+'_wk'+str(wk)+'\n'
-			f.write(file)
-
-			# Probabilistic skill maps (all cats)
-			f.write("437\n")
-			# save Ranked Probability Skill Score (all cats)
-			f.write("122\n")
-			file='../output/'+fprefix+'_'+mpref+'_RPSS_'+training_season+'_wk'+str(wk)+'\n'
-			f.write(file)
-
-			# Probabilistic skill maps (all cats)
-			f.write("437\n")
-			# save Ranked Probability Skill Score (all cats)
-			f.write("131\n")
-			file='../output/'+fprefix+'_'+mpref+'_GROC_'+training_season+'_wk'+str(wk)+'\n'
 			f.write(file)
 
 		# Exit
