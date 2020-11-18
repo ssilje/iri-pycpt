@@ -1,5 +1,6 @@
-#This is PyCPT_functions.py (version1.9) -- 6 Nov 2020
-#Authors: ÁG Muñoz (agmunoz@iri.columbia.edu), AW Robertson (awr@iri.columbia.edu), T Turkington (NEA), Bohar Singh, SJ Mason
+#This is PyCPT_functions.py (version1.9) -- 18 Nov 2020
+#Authors: ÁG Muñoz (agmunoz@iri.columbia.edu), AW Robertson (awr@iri.columbia.edu), Cuihua Li (OCP)
+#Collaborators: T Turkington (NEA), Bohar Singh, SJ Mason, Liseth Campos (DIMAR), Ana Lucía Caicedo (DIMAR)
 #Notes: be sure it matches version of PyCPT
 #Log: see version.log in GitHub
 # AWR: edits made 20-Mar-2020: (1) indentation errors fixed; (2) ‘mpref’ argument to Prepfiles & GetForecast (L131, L143, L166, L1648). Argument added to calling program too (PyCPT_s2sv1.6.ipynb); (3) added mpref if-statement to GetForecasts (L1672) to only get the individual ensemble members for noMOS; (4) Revised dictionary entry for CFSv2 *forecast* file from S2S database (L1659)
@@ -161,13 +162,13 @@ def PrepFiles(rainfall_frequency, threshold_pctle, wlo1, wlo2,elo1, elo2,sla1, s
 			print('----------------------------------------------')
 		else:
 			# if temp:
-			# 	GetHindcasts_Temp(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download)
+			# 	GetHindcasts_T2M(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download)
 			# 	print('Hindcasts file ready to go')
 			# 	print('----------------------------------------------')
-			# 	GetObsTn(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, hdate_last, force_download)
-			# 	print('Obs:temp min file ready to go')
+			# 	GetObs_T2M(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, hdate_last, force_download)
+			# 	print('Obs:temp file ready to go')
 			# 	print('----------------------------------------------')
-			# 	GetForecast_Temp(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download)
+			# 	GetForecast_T2M(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download)
 			# 	print('Forecasts file ready to go')
 			# 	print('----------------------------------------------')
 			# else:
@@ -1786,10 +1787,10 @@ def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nl
 		get_ipython().system("gunzip -f model_precip_"+mon+"_wk"+str(week)+".tsv.gz")
 		#! curl -g -k -b '__dlauth_id='$key'' ''$url'' > model_precip_${mo}.tsv
 
-def GetHindcasts_Temp(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download, dic_s2s):
+def GetHindcasts_T2M(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download, dic_s2s):
 	if not force_download:
 		try:
-			ff=open("model_Temp_"+mon+"_wk"+str(week)+".tsv", 'r')
+			ff=open("model_T2M_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
 			print("\033[1mWarning:\033[0;0m {0}".format(err))
@@ -1797,16 +1798,15 @@ def GetHindcasts_Temp(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, wee
 			force_download = True
 	if force_download:
 		#dictionary:
-#		dic = { 'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_temperature/.skt/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/LA/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%201%20'+mon+'%20'+str(fyr)+')%20(2300%2028%20'+mon+'%20'+str(fyr)+')/RANGE/%5BL%5Daverage//Celsius/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(temp)/def//units/(Celsius)/def//long_name/(surface temperature)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+#               dic = { 'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.2m_above_ground/.2t/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/LA/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%201%20'+mon+'%20'+str(fyr)+')%20(2300%2028%20'+mon+'%20'+str(fyr)+')/RANGE/%5BL%5Daverage//Celsius/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(temp)/def//units/(Celsius)/def//long_name/(2-m temperature)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
 #		}
 		# calls curl to download data
 		#url=dic[model]
-		url=eval(dic_s2s[model+'_hcst_Temp'])
+		url=eval(dic_s2s[model+'_hcst_T2M'])
 		print("\n Hindcasts URL: \n\n "+url)
-		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > model_Temp_"+mon+"_wk"+str(week)+".tsv.gz")
-		get_ipython().system("gunzip -f model_Temp_"+mon+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > model_T2M_"+mon+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("gunzip -f model_T2M_"+mon+"_wk"+str(week)+".tsv.gz")
 		#! curl -g -k -b '__dlauth_id='$key'' ''$url'' > model_precip_${mo}.tsv
-
 
 def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, day1, day2, nday, fyr, mon, os, key, week, wetday_threshold, nlag, training_season, hstep,model, force_download, dic_s2s):
 	nwi=4  #number of weeks to use for real-time ECMWF training period (2 initializations per week) --Send to namelist in the future
@@ -1880,10 +1880,10 @@ def GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, 
 		get_ipython().system("gunzip -f obs_precip_"+mon+"_wk"+str(week)+".tsv.gz")
 		#curl -g -k -b '__dlauth_id='$key'' ''$url'' > obs_precip_${mo}.tsv
 
-def GetObsTn(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, hdate_last, force_download, dic_s2s):
+def GetObs_T2M(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, hdate_last, force_download, dic_s2s):
 	if not force_download:
 		try:
-			ff=open("obs_tmin_"+mon+"_wk"+str(week)+".tsv", 'r')
+			ff=open("obs_T2M_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
 			print("\033[1mWarning:\033[0;0m {0}".format(err))
@@ -1891,15 +1891,57 @@ def GetObsTn(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag
 			force_download = True
 	if force_download:
 		#dictionary:
-#		dic = {'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%201%20'+mon+'%20'+str(fyr)+')%20(2300%2028%20'+mon+'%20'+str(fyr)+')/RANGE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/'+obs_source+'/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/T/'+str(nday)+'/runningAverage/'+str(nday)+'.0/mul/T/2/index/.T/SAMPLE/dup%5BT%5Daverage/sub/-999/setmissing_value/nip/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+#               dic = {'ECMWF':  'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.2m_above_ground/.2t/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/LA/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%201%20'+mon+'%20'+str(fyr)+')%20(2300%2028%20'+mon+'%20'+str(fyr)+')/RANGE/%5BLA%5D//keepgrids/average//Celsius/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/LA/hdate/add/add/0/RECHUNK/LA/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/SOURCES/.NOAA/.NCEP/.CPC/.temperature/.daily/a%3A/.tmax/%3Aa%3A/.tmin/%3Aa/add/2/div/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/T/'+str(nday)+'/runningAverage/T/2/index/.T/SAMPLE/dup/%5BT%5Daverage/sub/-999/setmissing_value/nip/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12.0/16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(2t)/def//units/(Celsius)/def//long_name/(2-m%20temperature)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
 #			  }
 		# calls curl to download data
 		#url=dic[model]
-		url=eval(dic_s2s[model+'_obs_Tmin'])
-		print("\n Obs (Temp min) data URL: \n\n "+url)
-		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > obs_tmin_"+mon+"_wk"+str(week)+".tsv.gz")
-		get_ipython().system("gunzip -f obs_tmin_"+mon+"_wk"+str(week)+".tsv.gz")
+		url=eval(dic_s2s[model+'_obs_T2M'])
+		print("\n Obs (2m Temp) data URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > obs_T2M_"+mon+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("gunzip -f obs_T2M_"+mon+"_wk"+str(week)+".tsv.gz")
 		#curl -g -k -b '__dlauth_id='$key'' ''$url'' > obs_precip_${mo}.tsv
+
+def GetObs_TMAX(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, hdate_last, force_download, dic_s2s):
+	if not force_download:
+		try:
+			ff=open("obs_TMAX_"+mon+"_wk"+str(week)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs temp file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+                #dictionary:
+#               dic = {'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.2m_above_ground/.2t/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/LA/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%201%20'+mon+'%20'+str(fyr)+')%20(2300%2028%20'+mon+'%20'+str(fyr)+')/RANGE/%5BLA%5D//keepgrids/average//Celsius/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/LA/hdate/add/add/0/RECHUNK/LA/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/SOURCES/.NOAA/.NCEP/.CPC/.temperature/.daily/.tmax/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/T/'+str(nday)+'/runningAverage/T/2/index/.T/SAMPLE/dup/%5BT%5Daverage/sub/-999/setmissing_value/nip/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12.0/16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(tmax)/def//units/(Celsius)/def//long_name/(maxmum%20temperature)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+#                         }
+                # calls curl to download data
+                #url=dic[model]
+		url=eval(dic_s2s[model+'_obs_TMAX'])
+		print("\n Obs (Temp max) data URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > obs_TMAX_"+mon+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("gunzip -f obs_TMAX_"+mon+"_wk"+str(week)+".tsv.gz")
+                #curl -g -k -b '__dlauth_id='$key'' ''$url'' > obs_precip_${mo}.tsv
+
+def GetObs_TMIN(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, hdate_last, force_download, dic_s2s):
+	if not force_download:
+		try:
+			ff=open("obs_TMIN_"+mon+"_wk"+str(week)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs temp file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+                #dictionary:
+#               dic = {'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.2m_above_ground/.2t/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/LA/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%201%20'+mon+'%20'+str(fyr)+')%20(2300%2028%20'+mon+'%20'+str(fyr)+')/RANGE/%5BLA%5D//keepgrids/average//Celsius/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/LA/hdate/add/add/0/RECHUNK/LA/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/SOURCES/.NOAA/.NCEP/.CPC/.temperature/.daily/.tmin/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/T/'+str(nday)+'/runningAverage/T/2/index/.T/SAMPLE/dup/%5BT%5Daverage/sub/-999/setmissing_value/nip/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12.0/16/Jan/2060/ensotime/%3Agrid/replaceGRID//name/(tmin)/def//units/(Celsius)/def//long_name/(minimum%20temperature)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+#                         }
+                # calls curl to download data
+                #url=dic[model]
+		url=eval(dic_s2s[model+'_obs_TMIN'])
+		print("\n Obs (Temp min) data URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > obs_TMIN_"+mon+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("gunzip -f obs_TMIN_"+mon+"_wk"+str(week)+".tsv.gz")
+                #curl -g -k -b '__dlauth_id='$key'' ''$url'' > obs_precip_${mo}.tsv
 
 def GetObs_RFREQ(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, wetday_threshold, threshold_pctle, nlag, training_season, hstep, model, obs_source, force_download, dic_s2s):
 	nwi=4  #number of weeks to use for real-time ECMWF training period (2 initializations per week) --Send to namelist in the future
@@ -2470,10 +2512,10 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 		#print("\n Obs std URL: \n\n "+url)
 		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/obs_std_PRCP_"+mon+"_wk"+str(week)+".nc")
 
-def GetForecast_Temp(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download, dic_s2s):
+def GetForecast_T2M(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download, dic_s2s):
 	if not force_download:
 		try:
-			ff=open("modelfcst_temp_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv", 'r')
+			ff=open("modelfcst_T2M_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
 			print("\033[1mWarning:\033[0;0m {0}".format(err))
@@ -2481,14 +2523,14 @@ def GetForecast_Temp(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, w
 			force_download = True
 	if force_download:
 		#dictionary:
-#		dic = {	'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.forecast/.perturbed/.sfc_temperature/.skt/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/LA/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Daverage/%5BM%5Daverage/SOURCES/.ECMWF/.S2S/.ECMF/.forecast/.perturbed/.sfc_temperature/.skt/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/LA/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Daverage/%5BM%5Daverage/%5Bhdate%5Daverage/sub//Celsius/unitconvert/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/1/Jan/3001/ensotime/12.0/1/Jan/3001/ensotime/%3Agrid/addGRID/T//pointwidth/0/def/pop//name/(temp)/def//units/(Celsius)/def//long_name/(surface temperature)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+#               dic = { 'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.forecast/.perturbed/.2m_above_ground/.2t/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/LA/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Daverage/%5BM%5Daverage/SOURCES/.ECMWF/.S2S/.ECMF/.forecast/.perturbed/.sfc_temperature/.skt/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/LA/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Daverage/%5BM%5Daverage/%5Bhdate%5Daverage/sub//Celsius/unitconvert/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/1/Jan/3001/ensotime/12.0/1/Jan/3001/ensotime/%3Agrid/addGRID/T//pointwidth/0/def/pop//name/(temp)/def//units/(Celsius)/def//long_name/(2-m temperature)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
 #			  }
 		# calls curl to download data
 		#url=dic[model]
-		url=eval(dic_s2s[model+'_fcst_Temp'])
+		url=eval(dic_s2s[model+'_fcst_T2M'])
 		print("\n Forecast URL: \n\n "+url)
-		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > modelfcst_temp_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv.gz")
-		get_ipython().system("gunzip -f modelfcst_temp_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > modelfcst_T2M_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv.gz")
+		get_ipython().system("gunzip -f modelfcst_T2M_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv.gz")
 		#curl -g -k -b '__dlauth_id='$key'' ''$url'' > modelfcst_precip_fday${fday}.tsv
 
 def CPTscript(mon,fday,lit,liti,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,training_season,ntrain,rainfall_frequency,MOS):
