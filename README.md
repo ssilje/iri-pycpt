@@ -9,7 +9,7 @@ PyCPT_seavX: version X of the seasonal PyCPT notebook
 Ángel G. Muñoz (agmunoz@iri.columbia.edu), Andrew W. Robertson (awr@iri.columbia.edu), Thea Turkington (NEA), Simon J. Mason
 
 ## Contributors
-Cuihua Li (OCP, Columbia U.), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Asher Siebert (IRI)
+Cuihua Li (OCP, Columbia U.), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Kyle (IRI), Liseth Campos (DIMAR), Asher Siebert (IRI), Ana Lucía Caicedo (DIMAR)
 
 ## How to cite
 We recommend this citation for PyCPT:
