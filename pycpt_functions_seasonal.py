@@ -1,10 +1,9 @@
-#This is PyCPT_functions_seasonal.py (version1.9) -- 13 Oct 2020
+#This is PyCPT_functions_seasonal.py (version1.9) -- 23 Nov 2020
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Requires: CPTv16.5.2+
 #Log:
 
-# Baby I love you
 #* Started simplifying functions, wrote readGrADSctl function; added functions to create the NextGen files for det skill assessment and plotting --AGM, Sep 2019
 #* Fixed bug with plotting functions when selecting a subset of the seasons, and added start time for forecast file in CPT script -- AGM, July 1st 2019
 #* Added VQ and UQ from CFSv2. User can now select the seasons to visualize in the skill and EOF maps. Fixed bug related to coordinate selection in CHIRPS, TRMM and CPC. -- AGM, June 13th 2019
@@ -19,6 +18,7 @@
 #	+ Check Hindcasts and Forecast_RFREQ
 import os
 import sys
+import platform
 import warnings
 import struct
 import xarray as xr
@@ -27,13 +27,16 @@ import pandas as pd
 from copy import copy
 from scipy.stats import t
 from scipy.stats import invgamma
-import cartopy.crs as ccrs
-from cartopy import feature
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.ticker as ticker
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib.ticker import Formatter, MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap
+import cartopy.crs as ccrs
+from cartopy import feature
+from cartopy.io.shapereader import Reader
+from cartopy.feature import ShapelyFeature
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
@@ -59,13 +62,13 @@ def exceedprob(x,dof,lo,sc):
 
 class MidpointNormalize(colors.Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
-        self.midpoint = midpoint
+        midpoint = midpoint
         colors.Normalize.__init__(self, vmin, vmax, clip)
 
     def __call__(self, value, clip=None):
         # I'm ignoring masked values and all kinds of edge cases to make a
         # simple example...
-        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+        x, y = [vmin, midpoint, vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
 
 def discrete_cmap(N, base_cmap=None):
@@ -79,6 +82,34 @@ def discrete_cmap(N, base_cmap=None):
 	#base.set_bad(color='white')
 	#return base.from_list(cmap_name, color_list, N)
 	return LinearSegmentedColormap.from_list(cmap_name, color_list, N) #perceptually uniform colormaps
+
+def make_cmap( map_color='bwr', N=11, continuous=True):
+	if map_color == 'WindowsCPT':
+		colors = [(238, 43, 51), (255, 57, 67),(253, 123, 91),(248, 175, 123),(254, 214, 158),(252, 239, 188),(255, 254, 241),(244, 255,255),(187, 252, 255),(160, 235, 255),(123, 210, 255),(89, 179, 238),(63, 136, 254),(52, 86, 254)]
+		colors = [ (colors[i][0] / 255.0, colors[i][1] / 255.0, colors[i][2] / 255.0) for i in range(len(colors))]
+		colors.reverse()
+		if str(continuous) == "continuous":
+			return LinearSegmentedColormap.from_list( "CPT", colors)
+		else:
+			return LinearSegmentedColormap.from_list( "CPT", colors, N=N)
+	else:
+		map_color = 'bwr' #override user input
+		if str(continuous) == 'continuous':
+			return plt.get_cmap(map_color)
+		else:
+			return plt.get_cmap(map_color, N)
+
+def make_cmap_blue(x):
+	colors = [(244, 255,255),
+	(187, 252, 255),
+	(160, 235, 255),
+	(123, 210, 255),
+	(89, 179, 238),
+	(63, 136, 254),
+	(52, 86, 254)]
+	colors = [ (colors[i][0] / 255.0, colors[i][1] / 255.0, colors[i][2] / 255.0) for i in range(len(colors))]
+	#colors.reverse()
+	return LinearSegmentedColormap.from_list( "matlab_clone", colors, N=x)
 
 def replaceAll(file,searchExp,replaceExp):
     for line in fileinput.input(file, inplace=1):
@@ -143,6 +174,276 @@ def setup_params(PREDICTOR,PREDICTAND,obs,MOS,tini,tend):
 	ntrain= tend-tini+1 # length of training period
 	fprefix = PREDICTOR
 	return rainfall_frequency,threshold_pctle,wetday_threshold,obs_source,hdate_last,mpref,L,ntrain,fprefix
+
+def plt_ng_probabilistic(models,PREDICTAND,loni,lone,lati,late,fprefix,mpref,tgts, mon, fyr, use_ocean):
+	models = ['NextGen']
+	cbar_loc, fancy = 'bottom', True
+	nmods=len(models)
+	nsea=len(tgts)
+	xdim=1
+	#
+	list_probabilistic_by_season = [[[], [], []] for i in range(nsea)]
+	list_det_by_season = [[] for i in range(nsea)]
+	for i in range(nmods):
+		for j in range(nsea):
+			if platform.system() == "Windows":
+				plats, plongs, av = read_forecast_bin('probabilistic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+			else:
+				plats, plongs, av = read_forecast('probabilistic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+			for kl in range(av.shape[0]):
+				list_probabilistic_by_season[j][kl].append(av[kl])
+			if platform.system() == "Windows":
+				dlats, dlongs, av = read_forecast_bin('deterministic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+			else:
+				dlats, dlongs, av = read_forecast('deterministic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+			list_det_by_season[j].append(av[0])
+
+	ng_probfcst_by_season = []
+	ng_detfcst_by_season = []
+	pbn, pn, pan = [],[],[]
+	for j in range(nsea):
+		p_bn_array = np.asarray(list_probabilistic_by_season[j][0])
+		p_n_array = np.asarray(list_probabilistic_by_season[j][1])
+		p_an_array = np.asarray(list_probabilistic_by_season[j][2])
+
+		p_bn = np.nanmean(p_bn_array, axis=0) #average over the models
+		p_n = np.nanmean(p_n_array, axis=0)   #some areas are NaN
+		p_an = np.nanmean(p_an_array, axis=0) #if they are Nan for All, mark
+
+		all_nan = np.zeros(p_bn.shape)
+		for ii in range(p_bn.shape[0]):
+			for jj in range(p_bn.shape[1]):
+				if np.isnan(p_bn[ii,jj]) and np.isnan(p_n[ii,jj]) and np.isnan(p_an[ii,jj]):
+					all_nan[ii,jj] = 1
+		missing = np.where(all_nan > 0)
+
+		max_ndxs = np.argmax(np.asarray([p_bn, p_n, p_an]), axis=0)
+		p_bn[np.where(max_ndxs!= 0)] = np.nan
+		p_n[np.where(max_ndxs!= 1)] = np.nan
+		p_an[np.where(max_ndxs!= 2)] = np.nan
+		pbn.append(p_bn)
+		pn.append(p_n)
+		pan.append(p_an)
+
+	fig, ax = plt.subplots(nrows=xdim, ncols=nsea, figsize=(nsea*13, xdim*10), sharex=False,sharey=False, subplot_kw={'projection': ccrs.PlateCarree()})
+
+	if nsea == 1:
+		ax = [ax]
+	ax = [ax]
+
+	for i in range(xdim):
+		for j in range(nsea):
+			current_cmap = plt.get_cmap('BrBG')
+			current_cmap.set_under('white', 0.0)
+
+			current_cmap_copper = plt.get_cmap('YlOrRd', 9)
+			current_cmap_binary = plt.get_cmap('Greens', 4)
+			current_cmap_ylgn = make_cmap_blue(9)
+
+			lats, longs = plats, plongs
+
+			ax[i][j].set_extent([longs[0],longs[-1],lats[0],lats[-1]], ccrs.PlateCarree())
+
+			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+			states_provinces = feature.NaturalEarthFeature(
+				category='cultural',
+	#				name='admin_1_states_provinces_shp',
+				name='admin_0_countries',
+				scale='10m',
+				facecolor='none')
+
+			ax[i][j].add_feature(states_provinces, edgecolor='black')
+			if str(use_ocean) == "True":
+				ax[i][j].add_feature(feature.OCEAN)
+			ax[i][j].add_feature(feature.LAND)
+			#ax[i][j].add_feature(feature.COASTLINE)
+			pl=ax[i][j].gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+				  linewidth=1, color='gray', alpha=0.5, linestyle=(0,(2,4)))
+			pl.xlabels_top = False
+			pl.ylabels_left = True
+			pl.ylabels_right = False
+			#pl.xlabels_bottom = False
+			#if i == nmods - 1: change so long vals in every plot
+			pl.xlabels_bottom = True
+			pl.xformatter = LONGITUDE_FORMATTER
+			pl.yformatter = LATITUDE_FORMATTER
+			pl.xlabel_style = {'size': 8}#'rotation': 'vertical'}
+
+
+			ax[i][j].set_ybound(lower=lati, upper=late)
+			titles = ["Deterministic Forecast", "Probabilistic Forecast (Dominant Tercile)"]
+
+
+			if j == 0:
+				ax[i][j].text(-0.25, 0.5, "Probabilistic Forecast (Dominant Tercile)",rotation='vertical', verticalalignment='center', horizontalalignment='center', transform=ax[i][j].transAxes)
+
+			labels = ['Rainfall (mm)', 'Probability (%)']
+			ax[i][j].set_title(tgts[j])
+
+
+			#fancy probabilistic
+			CS1 = ax[i][j].pcolormesh(np.linspace(longs[0], longs[-1],num=len(longs)), np.linspace(lats[0], lats[-1], num=len(lats)), pbn[j],
+				vmin=35, vmax=80,
+				#norm=MidpointNormalize(midpoint=0.),
+				cmap=current_cmap_copper)
+			CS2 = ax[i][j].pcolormesh(np.linspace(longs[0], longs[-1],num=len(longs)), np.linspace(lats[0], lats[-1], num=len(lats)), pn[j],
+				vmin=35, vmax=55,
+				#norm=MidpointNormalize(midpoint=0.),
+				cmap=current_cmap_binary)
+			CS3 = ax[i][j].pcolormesh(np.linspace(longs[0], longs[-1],num=len(longs)), np.linspace(lats[0], lats[-1], num=len(lats)), pan[j],
+				vmin=35, vmax=80,
+				#norm=MidpointNormalize(midpoint=0.),
+				cmap=current_cmap_ylgn)
+
+			bounds = [40,45,50,55,60,65,70,75]
+			nbounds = [40,45,50]
+
+			#fancy probabilistic cb bottom
+			axins_f_bottom = inset_axes(ax[i][j],
+            	width="40%",  # width = 5% of parent_bbox width
+               	height="5%",  # height : 50%
+               	loc='lower left',
+               	bbox_to_anchor=(-0.2, -0.15, 1.2, 1),
+               	bbox_transform=ax[i][j].transAxes,
+               	borderpad=0.1 )
+			axins2_bottom = inset_axes(ax[i][j],
+            	width="20%",  # width = 5% of parent_bbox width
+               	height="5%",  # height : 50%
+               	loc='lower center',
+               	bbox_to_anchor=(-0.0, -0.15, 1, 1),
+               	bbox_transform=ax[i][j].transAxes,
+               	borderpad=0.1 )
+			axins3_bottom = inset_axes(ax[i][j],
+            	width="40%",  # width = 5% of parent_bbox width
+               	height="5%",  # height : 50%
+               	loc='lower right',
+               	bbox_to_anchor=(0, -0.15, 1.2, 1),
+               	bbox_transform=ax[i][j].transAxes,
+               	borderpad=0.1 )
+			cbar_fbl = fig.colorbar(CS1, ax=ax[i][j], cax=axins_f_bottom, orientation='horizontal', ticks=bounds)
+			cbar_fbl.set_label('BN Probability (%)') #, rotation=270)\
+
+			cbar_fbc = fig.colorbar(CS2, ax=ax[i][j],  cax=axins2_bottom, orientation='horizontal', ticks=nbounds)
+			cbar_fbc.set_label('N Probability (%)') #, rotation=270)\
+
+			cbar_fbr = fig.colorbar(CS3, ax=ax[i][j],  cax=axins3_bottom, orientation='horizontal', ticks=bounds)
+			cbar_fbr.set_label('AN Probability (%)') #, rotation=270)\
+
+	fig.savefig('./output/figures/NG_Probabilistic_RealtimeForecasts.png', dpi=500, bbox_inches='tight')
+
+
+def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mons, mon, fyr, use_ocean):
+	"""A simple function for ploting the statistical scores
+
+	PARAMETERS
+	----------
+		fcst_type: either 'deterministic' or 'probabilistic'
+		loni: western longitude
+		lone: eastern longitude
+		lati: southern latitude
+		late: northern latitude
+	"""
+	cbar_loc, fancy = 'bottom', True
+	nmods=len(models)
+	nsea=len(mons)
+
+	xdim = 1
+	list_probabilistic_by_season = [[[], [], []] for i in range(nsea)]
+	list_det_by_season = [[] for i in range(nsea)]
+	for i in range(nmods):
+		for j in range(nsea):
+			plats, plongs, av = read_forecast('probabilistic', models[i], predictand, mpref, mons[j], mon, fyr )
+			list_probabilistic_by_season[j][0].append(av[0])
+			list_probabilistic_by_season[j][1].append(av[1])
+			list_probabilistic_by_season[j][2].append(av[2])
+			dlats, dlongs, av = read_forecast('deterministic', models[i], predictand, mpref, mons[j], mon, fyr )
+			list_det_by_season[j].append(av[0])
+
+	ng_probfcst_by_season = []
+	ng_detfcst_by_season = []
+	for j in range(nsea):
+		d_array = np.asarray(list_det_by_season[j])
+		d_nanmean = np.nanmean(d_array, axis=0)
+		ng_detfcst_by_season.append(d_nanmean)
+
+	fig, ax = plt.subplots(nrows=xdim, ncols=nsea, figsize=(nsea*13, xdim*10), sharex=True,sharey=True, subplot_kw={'projection': ccrs.PlateCarree()})
+	if nsea == 1:
+		ax = [ax]
+	ax = [ax]
+
+
+
+
+	for i in range(xdim):
+		for j in range(nsea):
+
+			axins_det = inset_axes(ax[i][j],
+				width="100%",  # width = 5% of parent_bbox width
+				height="5%",  # height : 50%
+				loc='lower right',
+				bbox_to_anchor=(0, -0.15, 1, 1),
+				bbox_transform=ax[i][j].transAxes,
+				borderpad=0.1 )
+			current_cmap = plt.get_cmap('BrBG')
+			current_cmap.set_bad('white',0.0)
+			current_cmap.set_under('white', 0.0)
+
+			lats, longs = dlats, dlongs
+			ax[i][j].set_extent([longs[0],longs[-1],lats[0],lats[-1]], ccrs.PlateCarree())
+
+			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+			states_provinces = feature.NaturalEarthFeature(
+				category='cultural',
+	#				name='admin_1_states_provinces_shp',
+				name='admin_0_countries',
+				scale='10m',
+				facecolor='none')
+			if str(use_ocean) == "True":
+				ax[i][j].add_feature(feature.OCEAN)
+			ax[i][j].add_feature(feature.LAND)
+			ax[i][j].add_feature(states_provinces)
+
+			pl=ax[i][j].gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+				  linewidth=1, color='gray', alpha=0.5, linestyle=(0,(2,4)))
+			pl.xlabels_top = False
+			pl.ylabels_left = True
+			pl.ylabels_right = False
+			#pl.xlabels_bottom = False
+			#if i == nmods - 1: change so long vals in every plot
+			pl.xlabels_bottom = True
+			pl.xformatter = LONGITUDE_FORMATTER
+			pl.yformatter = LATITUDE_FORMATTER
+			ax[i][j].add_feature(states_provinces, edgecolor='black')
+			ax[i][j].set_ybound(lower=lati, upper=late)
+			pl.xlabel_style = {'size': 8}#'rotation': 'vertical'}
+
+			titles = ["Deterministic Forecast", "Probabilistic Forecast (Dominant Tercile)"]
+
+
+			if j == 0:
+				ax[i][j].text(-0.25, 0.5, "Deterministic Forecast",rotation='vertical', verticalalignment='center', horizontalalignment='center', transform=ax[i][j].transAxes)
+
+			labels = ['Rainfall (mm)', 'Probability (%)']
+			ax[i][j].set_title(mons[j])
+
+			#fancy deterministic
+			var = ng_detfcst_by_season[j]
+			CS_det = ax[i][j].pcolormesh(np.linspace(longs[0], longs[-1],num=len(longs)), np.linspace(lats[0], lats[-1], num=len(lats)), var,
+				#norm=MidpointNormalize(midpoint=0.),
+				cmap=current_cmap)
+
+			if cbar_loc == 'left':
+				#fancy deterministic cb left
+				axins_det = inset_axes(ax[i][j], width="5%",  height="100%", loc='center left', bbox_to_anchor=(-0.25, 0., 1, 1),bbox_transform=ax[i][j].transAxes, borderpad=0.1 )
+				cbar_ldet = fig.colorbar(CS_det, ax=ax[i][j], cax=axins_det,  orientation='vertical', pad=0.02)
+				cbar_ldet.set_label(labels[i]) #, rotation=270)\
+				axins_det.yaxis.tick_left()
+			else:
+				#fancy deterministic cb bottom
+				axins_det = inset_axes(ax[i][j],width="100%",  height="5%",  loc='lower center',bbox_to_anchor=(-0.1, -0.15, 1.1, 1), bbox_transform=ax[i][j].transAxes,borderpad=0.1 )
+				cbar_bdet = fig.colorbar(CS_det, ax=ax[i][j],  cax=axins_det, orientation='horizontal', pad = 0.02)
+				cbar_bdet.set_label(labels[i])
+	fig.savefig('./output/figures/NG_Deterministic_RealtimeForecasts.png', dpi=500, bbox_inches='tight')
 
 def readGrADSctl(models,fprefix,predictand,mpref,id,tar,monf,fyr):
 	#Read grads binary file size H, W, T
@@ -253,7 +554,7 @@ def PrepFiles_usrNetcdf(fprefix, predictand, tini,tend, wlo1, wlo2,elo1, elo2, s
 	print('Forecasts file ready to go')
 	print('----------------------------------------------')
 
-def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2):
+def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2,use_topo):
 	"""A simple plot function for the geographical domain
 
 	PARAMETERS
@@ -285,10 +586,12 @@ def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2):
 		ax.set_extent([loni[i],lone[i],lati[i],late[i]], ccrs.PlateCarree())
 
 		# Put a background image on for nice sea rendering.
-		ax.stock_img()
+		if str(use_topo) == "True":
+			ax.stock_img()
 
 		ax.add_feature(feature.LAND)
 		ax.add_feature(feature.COASTLINE)
+		ax.add_feature(feature.OCEAN)
 		ax.set_title(title[i]+" domain")
 		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
 				  linewidth=2, color='gray', alpha=0.5, linestyle='--')
@@ -321,7 +624,9 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		print('No EOFs are computed if MOS=None is used')
 		return
 
+
 	nmods=len(models)
+	current_cmap = make_cmap(map_color, continuous=colorbar_option)
 	#plt.figure(figsize=(20,10))
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
 	tari=tgts[0]
@@ -374,7 +679,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 
 			CS=plt.pcolormesh(np.linspace(loni, loni+Wy*XDy,num=Wy), np.linspace(lati+Hy*YDy, lati, num=Hy), eofy[mode,:,:],
 			vmin=-.1,vmax=.1,
-			cmap=plt.cm.bwr,
+			cmap=current_cmap,
 			transform=ccrs.PlateCarree())
 			label = 'EOF charges'
 
@@ -387,7 +692,9 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			facecolor='none')
 
 		ax.add_feature(feature.LAND)
-		ax.add_feature(feature.COASTLINE)
+		ax.add_feature(states_provinces, edgecolor='gray')
+		if str(use_ocean) == "True":
+			ax.add_feature(feature.OCEAN)
 
 		#tick_spacing=0.5
 		#ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
@@ -402,7 +709,6 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		pl.yformatter = LATITUDE_FORMATTER
 		pl.xlocator = ticker.MaxNLocator(4)
 		pl.ylocator = ticker.MaxNLocator(4)
-		ax.add_feature(states_provinces, edgecolor='gray')
 		ax.set_ybound(lower=lati, upper=late)
 
 		if k<=nsea:
@@ -433,7 +739,10 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 				facecolor='none')
 
 			ax.add_feature(feature.LAND)
-			ax.add_feature(feature.COASTLINE)
+			ax.add_feature(states_provinces, edgecolor='gray')
+			#ax.add_feature(feature.COASTLINE)
+			if str(use_ocean) == "True":
+				ax.add_feature(feature.OCEAN)
 			if k == (nrow*nsea)+1:
 				ax.text(-0.35,0.5,model,rotation=90,verticalalignment='center', transform=ax.transAxes)
 
@@ -477,9 +786,10 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 
 			eofx[eofx==-999.]=np.nan #nans
 
+			cmap =current_cmap
 			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), eofx[mode,:,:],
 			vmin=-.1,vmax=.1,
-			cmap=plt.cm.bwr,
+			cmap=current_cmap,
 			transform=ccrs.PlateCarree())
 			label = 'EOF charges'
 			plt.subplots_adjust(hspace=0)
@@ -494,7 +804,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			cbar.set_label(label) #, rotation=270)
 			f.close()
 
-def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, mons):
+def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, mons, map_color, colorbar_option, use_ocean):
 	"""A simple function for ploting the statistical scores
 
 	PARAMETERS
@@ -547,7 +857,10 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 				facecolor='none')
 
 			ax.add_feature(feature.LAND)
-			ax.add_feature(feature.COASTLINE)
+			ax.add_feature(states_provinces, edgecolor='gray')
+			#ax.add_feature(feature.COASTLINE)
+			if str(use_ocean) == 'True':
+				ax.add_feature(feature.OCEAN)
 
 			#tick_spacing=0.5
 			#ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
@@ -588,7 +901,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 				A=np.fromfile(f,dtype='float32',count=numval)
 				var = np.transpose(A.reshape((W, H), order='F'))
 				var[var==-999.]=np.nan #only sensible values
-				current_cmap = plt.cm.BrBG
+				current_cmap = make_cmap(map_color, N=10, continuous=colorbar_option)
 				current_cmap.set_bad('white',1.0)
 				current_cmap.set_under('white', 1.0)
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
@@ -620,42 +933,42 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 				if score == '2AFC':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=0,vmax=100,
-					cmap=discrete_cmap(11, 'bwr'),
+					cmap=make_cmap(map_color, N=11, continuous=colorbar_option),
 					transform=ccrs.PlateCarree())
 					label = '2AFC (%)'
 
 				if score == 'RocAbove' or score=='RocBelow':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=0,vmax=1,
-					cmap=discrete_cmap(11, 'bwr'),
+					cmap=make_cmap(map_color, N=11, continuous=colorbar_option),
 					transform=ccrs.PlateCarree())
 					label = 'ROC area'
 
 				if score == 'Spearman' or score=='Pearson':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=-1,vmax=1,
-					cmap=discrete_cmap(11, 'bwr'),
+					cmap=make_cmap(map_color, N=11, continuous=colorbar_option),
 					transform=ccrs.PlateCarree())
 					label = 'Correlation'
 
 				if score == 'RPSS':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=vmi,vmax=vma,
-					cmap=discrete_cmap(20, 'bwr'),
+					cmap=make_cmap(map_color, N=20, continuous=colorbar_option),
 					transform=ccrs.PlateCarree())
 					label = 'RPSS (all categories)'
 
 				if score=='GROC':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=0,vmax=100,
-					cmap=discrete_cmap(11, 'bwr'),
+					cmap=make_cmap(map_color, N=11, continuous=colorbar_option),
 					transform=ccrs.PlateCarree())
 					label = 'GROC (probabilistic)'
 
 				if score=='Ignorance':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var/1.5849,
 					vmin=0.6,vmax=1.4,
-					cmap=discrete_cmap(9, 'bwr'),
+					cmap=make_cmap(map_color, N=9, continuous=colorbar_option),
 					transform=ccrs.PlateCarree())
 					label = 'Ignorance Skill Score (all categories)'
 
@@ -671,8 +984,8 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 		cbar.set_label(label) #, rotation=270)
 
-
-def skilltab(score,wknam,lon1,lat1,lat2,lon2,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+#Still working on it: AGM
+def skilltab(models,predictand,score,wknam,lon1,lat1,lat2,lon2,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
 	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
 
 	PARAMETERS
@@ -1124,6 +1437,105 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 	#cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 	#cbar.set_label(label) #, rotation=270)
 	f.close()
+
+def read_forecast_bin( fcst_type, model, predictand, mpref, mons, mon, fyr):
+	if fcst_type == 'deterministic':
+		f = open("./output/" + model + '_' + predictand + predictand +'_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.dat', 'rb')
+	elif fcst_type == 'probabilistic':
+		f = open("./output/" + model + '_' + predictand +predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.dat', 'rb')
+	else:
+		print('invalid fcst_type')
+		return
+
+	if fcst_type == 'deterministic':
+		with  open("./output/" + model + '_' + predictand +predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
+			for line in lines_that_contain("XDEF", fp): #lons
+				W = int(line.split()[1])
+				XD= float(line.split()[4])
+				Wi = float(line.split()[3])
+		with  open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
+			for line in lines_that_contain("YDEF", fp):  #lats
+				H = int(line.split()[1])
+				YD= float(line.split()[4])
+				Hi = float(line.split()[3])
+
+
+		garb = struct.unpack('s', f.read(1))[0]
+		recl = struct.unpack('i', f.read(4))[0]
+		numval=int(recl/np.dtype('float32').itemsize)
+		A0 = np.fromfile(f, dtype='float32', count=numval)
+		var = np.transpose(A0.reshape((W, H), order='F'))
+		var[var==-999.]=np.nan #only sensible values
+		recl = struct.unpack('i', f.read(4))[0]
+		garb = struct.unpack('s', f.read(1))[0]
+		lats, lons = np.linspace(Hi+H*YD, Hi, num=H+1), np.linspace(Wi, Wi+W*XD, num=W+1)
+		return lats, lons, np.asarray([var])
+
+	if fcst_type == 'probabilistic':
+		with  open("./output/" + model + '_' + predictand + predictand +'_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
+			for line in lines_that_contain("XDEF", fp): #lons
+				W = int(line.split()[1])
+				XD= float(line.split()[4])
+				Wi = float(line.split()[3])
+		with  open("./output/" + model + '_' + predictand +predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
+			for line in lines_that_contain("YDEF", fp):  #lats
+				H = int(line.split()[1])
+				YD= float(line.split()[4])
+				Hi = float(line.split()[3])
+
+		vars = []
+		for ii in range(3):
+			garb = struct.unpack('s', f.read(1))[0]
+			recl = struct.unpack('i', f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize)
+			A0 = np.fromfile(f, dtype='float32', count=numval)
+			var = np.transpose(A0.reshape((W, H), order='F'))
+			var[var==-1.]=np.nan #only sensible values
+			recl = struct.unpack('i', f.read(4))[0]
+			garb = struct.unpack('s', f.read(1))[0]
+			vars.append(var)
+		lats, lons = np.linspace(Hi+H*YD, Hi, num=H+1), np.linspace(Wi, Wi+W*XD, num=W+1)
+		return lats, lons, np.asarray(vars)
+
+
+def read_forecast( fcst_type, model, predictand, mpref, mons, mon, fyr):
+	if fcst_type == 'deterministic':
+		f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
+	elif fcst_type == 'probabilistic':
+		f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
+	else:
+		print('invalid fcst_type')
+		return
+	lats, all_vals, vals = [], [], []
+	flag = 0
+	for line in f:
+		if line[0:4] == 'cpt:':
+			if flag == 2:
+				vals = np.asarray(vals, dtype=float)
+				if fcst_type == 'deterministic':
+					vals[vals == -999.0] = np.nan
+				if fcst_type == 'probabilistic':
+					vals[vals == -1.0] = np.nan
+				all_vals.append(vals)
+				lats = []
+				vals = []
+			flag = 1
+		elif flag == 1 and line[0:4] != 'cpt:':
+			longs = line.strip().split('\t')
+			longs = [float(i) for i in longs]
+			flag = 2
+		elif flag == 2:
+			latvals = line.strip().split('\t')
+			lats.append(float(latvals.pop(0)))
+			vals.append(latvals)
+	vals = np.asarray(vals, dtype=float)
+	if fcst_type == 'deterministic':
+		vals[vals == -999.0] = np.nan
+	if fcst_type == 'probabilistic':
+		vals[vals == -1.0] = np.nan
+	all_vals.append(vals)
+	all_vals = np.asarray(all_vals)
+	return lats, longs, all_vals
 
 # def readNetCDF_predictand(infile,outfile, predictand, wlo2, elo2, sla2, nla2, tar):
 # 	"""Function to read the user's predictand NetCDF file and write to CPT format.
