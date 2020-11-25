@@ -2431,7 +2431,7 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 		file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_RocAbove_'+tar+'_'+mon+'\n'
 		f.write(file)
 
-		if MOS=='CCA' or MOS=='PCR' or MOS == "None":   #DO NOT USE CPT to compute probabilities if MOS='None' --use IRIDL for direct counting
+		if MOS=='CCA' or MOS=='PCR':   #DO NOT USE CPT to compute probabilities if MOS='None' --use IRIDL for direct counting
 
 			#######FORECAST(S)	!!!!!
 			# Probabilistic (3 categories) maps
