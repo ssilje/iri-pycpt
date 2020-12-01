@@ -604,7 +604,7 @@ def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2,use_topo):
 		ax.add_feature(states_provinces, edgecolor='gray')
 	plt.show()
 
-def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,mons):
+def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,mons,map_color, colorbar_option, use_ocean):
 	"""A simple function for ploting EOFs computed by CPT
 
 	PARAMETERS
