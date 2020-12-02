@@ -1,4 +1,4 @@
-#This is PyCPT_functions_seasonal.py (version1.9) -- 13 Oct 2020
+#This is PyCPT_functions_seasonal.py (version1.9) -- 2 Dec 2020
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Requires: CPTv16.5.2+
@@ -20,8 +20,6 @@ import os
 import sys
 import platform
 import warnings
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-
 import struct
 import xarray as xr
 import numpy as np
@@ -29,17 +27,18 @@ import pandas as pd
 from copy import copy
 from scipy.stats import t
 from scipy.stats import invgamma
-import cartopy.crs as ccrs
-from cartopy import feature
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.ticker as ticker
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib.ticker import Formatter, MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap
-from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import cartopy.crs as ccrs
+from cartopy import feature
 from cartopy.io.shapereader import Reader
 from cartopy.feature import ShapelyFeature
+from cartopy.mpl.geoaxes import GeoAxes
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 import fileinput
 
@@ -83,6 +82,34 @@ def discrete_cmap(N, base_cmap=None):
 	#base.set_bad(color='white')
 	#return base.from_list(cmap_name, color_list, N)
 	return LinearSegmentedColormap.from_list(cmap_name, color_list, N) #perceptually uniform colormaps
+
+def make_cmap( map_color='bwr', N=11, continuous=True):
+	if map_color == 'WindowsCPT':
+		colors = [(238, 43, 51), (255, 57, 67),(253, 123, 91),(248, 175, 123),(254, 214, 158),(252, 239, 188),(255, 254, 241),(244, 255,255),(187, 252, 255),(160, 235, 255),(123, 210, 255),(89, 179, 238),(63, 136, 254),(52, 86, 254)]
+		colors = [ (colors[i][0] / 255.0, colors[i][1] / 255.0, colors[i][2] / 255.0) for i in range(len(colors))]
+		colors.reverse()
+		if str(continuous) == "continuous":
+			return LinearSegmentedColormap.from_list( "CPT", colors)
+		else:
+			return LinearSegmentedColormap.from_list( "CPT", colors, N=N)
+	else:
+		map_color = 'bwr' #override user input
+		if str(continuous) == 'continuous':
+			return plt.get_cmap(map_color)
+		else:
+			return plt.get_cmap(map_color, N)
+
+def make_cmap_blue(x):
+	colors = [(244, 255,255),
+	(187, 252, 255),
+	(160, 235, 255),
+	(123, 210, 255),
+	(89, 179, 238),
+	(63, 136, 254),
+	(52, 86, 254)]
+	colors = [ (colors[i][0] / 255.0, colors[i][1] / 255.0, colors[i][2] / 255.0) for i in range(len(colors))]
+	#colors.reverse()
+	return LinearSegmentedColormap.from_list( "matlab_clone", colors, N=x)
 
 def replaceAll(file,searchExp,replaceExp):
     for line in fileinput.input(file, inplace=1):
@@ -418,7 +445,6 @@ def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mon
 				cbar_bdet.set_label(labels[i])
 	fig.savefig('./output/figures/NG_Deterministic_RealtimeForecasts.png', dpi=500, bbox_inches='tight')
 
-
 def readGrADSctl(models,fprefix,predictand,mpref,id,tar,monf,fyr):
 	#Read grads binary file size H, W, T
 	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+id+'_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
@@ -528,7 +554,7 @@ def PrepFiles_usrNetcdf(fprefix, predictand, tini,tend, wlo1, wlo2,elo1, elo2, s
 	print('Forecasts file ready to go')
 	print('----------------------------------------------')
 
-def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2, use_topo):
+def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2,use_topo):
 	"""A simple plot function for the geographical domain
 
 	PARAMETERS
@@ -546,7 +572,6 @@ def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2, use_topo):
 		name='admin_0_countries',
 		scale='10m',
 		facecolor='none')
-
 
 	fig = plt.subplots(figsize=(15,15), subplot_kw=dict(projection=ccrs.PlateCarree()))
 	loni = [loni1,loni2]
@@ -576,27 +601,10 @@ def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2, use_topo):
 		pl.yformatter = LATITUDE_FORMATTER
 		pl.xlocator = ticker.MaxNLocator(4)
 		pl.ylocator = ticker.MaxNLocator(4)
-
 		ax.add_feature(states_provinces, edgecolor='gray')
 	plt.show()
 
-def make_cmap( map_color='bwr', N=11, continuous=True):
-	if map_color == 'WindowsCPT':
-		colors = [(238, 43, 51), (255, 57, 67),(253, 123, 91),(248, 175, 123),(254, 214, 158),(252, 239, 188),(255, 254, 241),(244, 255,255),(187, 252, 255),(160, 235, 255),(123, 210, 255),(89, 179, 238),(63, 136, 254),(52, 86, 254)]
-		colors = [ (colors[i][0] / 255.0, colors[i][1] / 255.0, colors[i][2] / 255.0) for i in range(len(colors))]
-		colors.reverse()
-		if str(continuous) == "continuous":
-			return LinearSegmentedColormap.from_list( "CPT", colors)
-		else:
-			return LinearSegmentedColormap.from_list( "CPT", colors, N=N)
-	else:
-		map_color = 'bwr' #override user input
-		if str(continuous) == 'continuous':
-			return plt.get_cmap(map_color)
-		else:
-			return plt.get_cmap(map_color, N)
-
-def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,mons, map_color, colorbar_option, use_ocean):
+def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,mons,map_color, colorbar_option, use_ocean):
 	"""A simple function for ploting EOFs computed by CPT
 
 	PARAMETERS
@@ -615,8 +623,10 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 	if mpref=='None':
 		print('No EOFs are computed if MOS=None is used')
 		return
-	current_cmap = make_cmap(map_color, continuous=colorbar_option)
+
+
 	nmods=len(models)
+	current_cmap = make_cmap(map_color, continuous=colorbar_option)
 	#plt.figure(figsize=(20,10))
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
 	tari=tgts[0]
@@ -680,8 +690,9 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			name='admin_0_countries',
 			scale='10m',
 			facecolor='none')
-		ax.add_feature(states_provinces, edgecolor='gray')
+
 		ax.add_feature(feature.LAND)
+		ax.add_feature(states_provinces, edgecolor='gray')
 		if str(use_ocean) == "True":
 			ax.add_feature(feature.OCEAN)
 
@@ -727,12 +738,11 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 				scale='10m',
 				facecolor='none')
 
-			ax.add_feature(states_provinces, edgecolor='gray')
 			ax.add_feature(feature.LAND)
+			ax.add_feature(states_provinces, edgecolor='gray')
 			#ax.add_feature(feature.COASTLINE)
 			if str(use_ocean) == "True":
 				ax.add_feature(feature.OCEAN)
-
 			if k == (nrow*nsea)+1:
 				ax.text(-0.35,0.5,model,rotation=90,verticalalignment='center', transform=ax.transAxes)
 
@@ -750,7 +760,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			pl.yformatter = LATITUDE_FORMATTER
 			pl.xlocator = ticker.MaxNLocator(4)
 			pl.ylocator = ticker.MaxNLocator(4)
-
+			ax.add_feature(states_provinces, edgecolor='gray')
 			lon_formatter = LongitudeFormatter(number_format='.2f') #LongitudeFormatter(degree_symbol='')
 			lat_formatter = LatitudeFormatter(number_format='.2f' ) #LatitudeFormatter(degree_symbol='')
 			ax.xaxis.set_major_formatter(lon_formatter)
@@ -775,6 +785,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 				eofx[mo,:,:]= np.transpose(A0.reshape((W, H), order='F'))
 
 			eofx[eofx==-999.]=np.nan #nans
+
 			cmap =current_cmap
 			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), eofx[mode,:,:],
 			vmin=-.1,vmax=.1,
@@ -844,9 +855,10 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 				name='admin_0_countries',
 				scale='10m',
 				facecolor='none')
-			ax.add_feature(states_provinces, edgecolor='gray')
 
 			ax.add_feature(feature.LAND)
+			ax.add_feature(states_provinces, edgecolor='gray')
+			#ax.add_feature(feature.COASTLINE)
 			if str(use_ocean) == 'True':
 				ax.add_feature(feature.OCEAN)
 
@@ -871,8 +883,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 			ax.yaxis.set_major_formatter(lat_formatter)
 			ax.xaxis.set_major_locator(plt.MaxNLocator(4))
 			ax.yaxis.set_major_locator(plt.MaxNLocator(4))
-
-
+			ax.add_feature(states_provinces, edgecolor='gray')
 			ax.set_ybound(lower=lati, upper=late)
 
 			if k<=nsea:
@@ -973,8 +984,8 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 		cbar.set_label(label) #, rotation=270)
 
-
-def skilltab(score,wknam,lon1,lat1,lat2,lon2,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+#Still working on it: AGM
+def skilltab(models,predictand,score,wknam,lon1,lat1,lat2,lon2,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
 	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
 
 	PARAMETERS
@@ -1525,6 +1536,7 @@ def read_forecast( fcst_type, model, predictand, mpref, mons, mon, fyr):
 	all_vals.append(vals)
 	all_vals = np.asarray(all_vals)
 	return lats, longs, all_vals
+
 # def readNetCDF_predictand(infile,outfile, predictand, wlo2, elo2, sla2, nla2, tar):
 # 	"""Function to read the user's predictand NetCDF file and write to CPT format.
 #
@@ -2432,7 +2444,6 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 		f.write(file)
 
 		if MOS=='CCA' or MOS=='PCR':   #DO NOT USE CPT to compute probabilities if MOS='None' --use IRIDL for direct counting
-
 			#######FORECAST(S)	!!!!!
 			# Probabilistic (3 categories) maps
 			f.write("455\n")
@@ -2445,6 +2456,7 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 			#502 # Forecast odds
 			#Exit submenu
 			f.write("0\n")
+
 			# Compute deterministc values and prediction limits
 			f.write("454\n")
 			# Output results
@@ -2646,20 +2658,6 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 		f.write("0\n")
 		f.close()
 		get_ipython().system("cp params "+model+"_"+fprefix+predictand+"_"+mpref+"_"+tar+"_"+mon+".cpt")
-
-
-def make_cmap_blue(x):
-	colors = [(244, 255,255),
-	(187, 252, 255),
-	(160, 235, 255),
-	(123, 210, 255),
-	(89, 179, 238),
-	(63, 136, 254),
-	(52, 86, 254)]
-	colors = [ (colors[i][0] / 255.0, colors[i][1] / 255.0, colors[i][2] / 255.0) for i in range(len(colors))]
-	#colors.reverse()
-	return LinearSegmentedColormap.from_list( "matlab_clone", colors, N=x)
-
 
 def ensemblefiles(models,work):
 	"""A simple function for preparing the NextGen ensemble files for the DL
