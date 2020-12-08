@@ -6,10 +6,10 @@ PyCPT_s2svX: version X of the sub-seasonal PyCPT notebook
 PyCPT_seavX: version X of the seasonal PyCPT notebook
 
 ## Authors
-Ángel G. Muñoz (agmunoz@iri.columbia.edu), Andrew W. Robertson (awr@iri.columbia.edu), Thea Turkington (NEA), Simon J. Mason
+Ángel G. Muñoz (agmunoz@iri.columbia.edu), Andrew W. Robertson (awr@iri.columbia.edu), Simon J. Mason
 
 ## Contributors
-Cuihua Li (OCP, Columbia U.), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Kyle (IRI), Liseth Campos (DIMAR), Asher Siebert (IRI), Ana Lucía Caicedo (DIMAR)
+Cuihua Li (OCP, Columbia U.), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Kyle Hall (IRI), Liseth Campos (DIMAR), Thea Turkington (NEA), Asher Siebert (IRI), Ana Lucía Caicedo (DIMAR)
 
 ## How to cite
 We recommend this citation for PyCPT:
