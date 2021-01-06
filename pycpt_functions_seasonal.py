@@ -60,6 +60,41 @@ def lines_that_end_with(string, fp):
 def exceedprob(x,dof,lo,sc):
 	return t.sf(x, dof, loc=lo, scale=sc)*100
 
+def writeGrads(fcsttype, filename, models, predictand, mpref, tgt, mon, fyr, monf):
+	if fcsttype == 'FCST_Obs':
+		lats, longs, data, years = read_forecast('deterministic', models[0], predictand, mpref, tgt, mon, fyr, filename='../input/NextGen'+'_'+predictand+ '_' + tgt+'_ini'+monf+'.tsv', converting_tsv=True)
+	else:
+		lats, longs, data, years = read_forecast('deterministic', models[0], predictand, mpref, tgt, mon, fyr, filename='../output/NextGen'+'_'+predictand+predictand+'_'+mpref+fcsttype+'_'+tgt+'_'+monf+str(fyr)+'.tsv', converting_tsv=True)
+	W, XD = len(longs), longs[1] - longs[0]
+	H, YD = len(lats), lats[0] - lats[1]
+	T = len(years)
+	f=open('../output/NextGen' +'_'+predictand+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.ctl','w')
+	f.write('DSET {}\n'.format('./output/NextGen' +'_'+predictand+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.dat'))
+	f.write('TITLE {}\n'.format('NextGen_{}'.format(fcsttype)))
+	f.write('UNDEF -999.000000\n')
+	f.write('OPTIONS yrev sequential little_endian\n')
+	f.write('XDEF {} LINEAR {} {}\n'.format(W, longs[0], XD))
+	f.write('YDEF {} LINEAR {} {}\n'.format(H, lats[-1], YD))
+	f.write('TDEF {} LINEAR 1{}{} 1yr\n'.format(T, tgt[0:3], years[0]))
+	f.write('ZDEF 1 LINEAR 1 1\n')
+	f.write('VARS 1\n')
+	f.write('\ta\t0\t99\t{}                   unitless\n'.format(predictand))
+	f.write('ENDVARS')
+	f.close()
+	print('Wrote {}'.format('../output/NextGen' +'_'+predictand+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.ctl'))
+
+	f=open('../output/NextGen'+'_'+predictand+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.dat','wb')
+	for t in range(T):
+		data[t][np.isnan(data[t])] = -999.000
+		f.write(struct.pack('i', int(W*H*np.dtype('float32').itemsize)))
+		for i in range(H):
+			for j in range(W):
+				f.write(struct.pack('f', float(data[t][i][j])))
+		f.write(struct.pack('i', int(W*H*np.dtype('float32').itemsize)))
+	f.close()
+	print('Wrote {}'.format('../output/NextGen' +'_'+predictand+predictand+'_'+mpref+fcsttype + '_' +tgt+'_'+monf+str(fyr)+'.dat'))
+
+
 class MidpointNormalize(colors.Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
         midpoint = midpoint
@@ -176,7 +211,6 @@ def setup_params(PREDICTOR,PREDICTAND,obs,MOS,tini,tend):
 	return rainfall_frequency,threshold_pctle,wetday_threshold,obs_source,hdate_last,mpref,L,ntrain,fprefix
 
 def plt_ng_probabilistic(models,PREDICTAND,loni,lone,lati,late,fprefix,mpref,tgts, mon, fyr, use_ocean):
-	models = ['NextGen']
 	cbar_loc, fancy = 'bottom', True
 	nmods=len(models)
 	nsea=len(tgts)
@@ -187,16 +221,16 @@ def plt_ng_probabilistic(models,PREDICTAND,loni,lone,lati,late,fprefix,mpref,tgt
 	for i in range(nmods):
 		for j in range(nsea):
 			if platform.system() == "Windows":
-				plats, plongs, av = read_forecast_bin('probabilistic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+				plats, plongs, av, years = read_forecast_bin('probabilistic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
 			else:
-				plats, plongs, av = read_forecast('probabilistic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+				plats, plongs, av, years = read_forecast('probabilistic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
 			for kl in range(av.shape[0]):
 				list_probabilistic_by_season[j][kl].append(av[kl])
-			if platform.system() == "Windows":
-				dlats, dlongs, av = read_forecast_bin('deterministic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
-			else:
-				dlats, dlongs, av = read_forecast('deterministic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
-			list_det_by_season[j].append(av[0])
+			#if platform.system() == "Windows":
+			#	dlats, dlongs, av = read_forecast_bin('deterministic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+			#else:
+			#	dlats, dlongs, av = read_forecast('deterministic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+			#list_det_by_season[j].append(av[0])
 
 	ng_probfcst_by_season = []
 	ng_detfcst_by_season = []
@@ -230,6 +264,13 @@ def plt_ng_probabilistic(models,PREDICTAND,loni,lone,lati,late,fprefix,mpref,tgt
 	if nsea == 1:
 		ax = [ax]
 	ax = [ax]
+	#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+	states_provinces = feature.NaturalEarthFeature(
+		category='cultural',
+#				name='admin_1_states_provinces_shp',
+		name='admin_0_countries',
+		scale='10m',
+		facecolor='none')
 
 	for i in range(xdim):
 		for j in range(nsea):
@@ -244,13 +285,6 @@ def plt_ng_probabilistic(models,PREDICTAND,loni,lone,lati,late,fprefix,mpref,tgt
 
 			ax[i][j].set_extent([longs[0],longs[-1],lats[0],lats[-1]], ccrs.PlateCarree())
 
-			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
-			states_provinces = feature.NaturalEarthFeature(
-				category='cultural',
-	#				name='admin_1_states_provinces_shp',
-				name='admin_0_countries',
-				scale='10m',
-				facecolor='none')
 
 			ax[i][j].add_feature(states_provinces, edgecolor='black')
 			if str(use_ocean) == "True":
@@ -352,11 +386,11 @@ def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mon
 	list_det_by_season = [[] for i in range(nsea)]
 	for i in range(nmods):
 		for j in range(nsea):
-			plats, plongs, av = read_forecast('probabilistic', models[i], predictand, mpref, mons[j], mon, fyr )
-			list_probabilistic_by_season[j][0].append(av[0])
-			list_probabilistic_by_season[j][1].append(av[1])
-			list_probabilistic_by_season[j][2].append(av[2])
-			dlats, dlongs, av = read_forecast('deterministic', models[i], predictand, mpref, mons[j], mon, fyr )
+			#plats, plongs, av = read_forecast('probabilistic', models[i], predictand, mpref, mons[j], mon, fyr )
+			#list_probabilistic_by_season[j][0].append(av[0])
+			#list_probabilistic_by_season[j][1].append(av[1])
+			#list_probabilistic_by_season[j][2].append(av[2])
+			dlats, dlongs, av, years = read_forecast('deterministic', models[i], predictand, mpref, mons[j], mon, fyr )
 			list_det_by_season[j].append(av[0])
 
 	ng_probfcst_by_season = []
@@ -373,7 +407,13 @@ def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mon
 
 
 
-
+	#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+	states_provinces = feature.NaturalEarthFeature(
+		category='cultural',
+#				name='admin_1_states_provinces_shp',
+		name='admin_0_countries',
+		scale='10m',
+		facecolor='none')
 	for i in range(xdim):
 		for j in range(nsea):
 
@@ -391,13 +431,7 @@ def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mon
 			lats, longs = dlats, dlongs
 			ax[i][j].set_extent([longs[0],longs[-1],lats[0],lats[-1]], ccrs.PlateCarree())
 
-			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
-			states_provinces = feature.NaturalEarthFeature(
-				category='cultural',
-	#				name='admin_1_states_provinces_shp',
-				name='admin_0_countries',
-				scale='10m',
-				facecolor='none')
+
 			if str(use_ocean) == "True":
 				ax[i][j].add_feature(feature.OCEAN)
 			ax[i][j].add_feature(feature.LAND)
@@ -624,6 +658,13 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		print('No EOFs are computed if MOS=None is used')
 		return
 
+	#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+	states_provinces = feature.NaturalEarthFeature(
+		category='cultural',
+#				name='admin_1_states_provinces_shp',
+		name='admin_0_countries',
+		scale='10m',
+		facecolor='none')
 
 	nmods=len(models)
 	current_cmap = make_cmap(map_color, continuous=colorbar_option)
@@ -683,13 +724,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			transform=ccrs.PlateCarree())
 			label = 'EOF charges'
 
-		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
-		states_provinces = feature.NaturalEarthFeature(
-			category='cultural',
-#				name='admin_1_states_provinces_shp',
-			name='admin_0_countries',
-			scale='10m',
-			facecolor='none')
+
 
 		ax.add_feature(feature.LAND)
 		ax.add_feature(states_provinces, edgecolor='gray')
@@ -817,7 +852,13 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 	"""
 	nmods=len(models)
 	nsea=len(mons)  #number of seasons and columns
-
+	#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+	states_provinces = feature.NaturalEarthFeature(
+		category='cultural',
+#				name='admin_1_states_provinces_shp',
+		name='admin_0_countries',
+		scale='10m',
+		facecolor='none')
 	#plt.figure(figsize=(20,10))
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
 	k=0
@@ -848,13 +889,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 			if k == (nrow*nsea)+1:
 				ax.text(-0.35,0.5,model,rotation=90,verticalalignment='center', transform=ax.transAxes)
 
-			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
-			states_provinces = feature.NaturalEarthFeature(
-				category='cultural',
-#				name='admin_1_states_provinces_shp',
-				name='admin_0_countries',
-				scale='10m',
-				facecolor='none')
+
 
 			ax.add_feature(feature.LAND)
 			ax.add_feature(states_provinces, edgecolor='gray')
@@ -1157,6 +1192,8 @@ def pltmapff(models,predictand,thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mp
 	dof=ntrain
 	nmods=len(models)
 	tar=tgts[mons.index(monf)]
+	writeGrads('FCST_Obs', '../input/NextGen_'+predictand+'_'+tar+'_ini'+monf+'.tsv', models, predictand, mpref, tar, monf, fyr, monf)
+
 	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
 	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
@@ -1498,28 +1535,51 @@ def read_forecast_bin( fcst_type, model, predictand, mpref, mons, mon, fyr):
 		return lats, lons, np.asarray(vars)
 
 
-def read_forecast( fcst_type, model, predictand, mpref, mons, mon, fyr):
-	if fcst_type == 'deterministic':
-		f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
-	elif fcst_type == 'probabilistic':
-		f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
+def read_forecast( fcst_type, model, predictand, mpref, mons, mon, fyr, filename='None', converting_tsv=False):
+	if filename == 'None':
+		if fcst_type == 'deterministic':
+			try:
+				f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
+			except:
+				f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.tsv', 'r')
+		elif fcst_type == 'probabilistic':
+			f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
+		else:
+			print('invalid fcst_type')
+			return
 	else:
-		print('invalid fcst_type')
-		return
-	lats, all_vals, vals = [], [], []
-	flag = 0
+		f = open(filename,'r')
+
+	lats, all_vals, vals, years = [], [], [], []
+	past_header, flag = False, 0
 	for line in f:
 		if line[0:4] == 'cpt:':
-			if flag == 2:
-				vals = np.asarray(vals, dtype=float)
-				if fcst_type == 'deterministic':
-					vals[vals == -999.0] = np.nan
-				if fcst_type == 'probabilistic':
-					vals[vals == -1.0] = np.nan
-				all_vals.append(vals)
-				lats = []
-				vals = []
-			flag = 1
+			if converting_tsv:
+				if not past_header:
+					past_header=True
+				else:
+					years.append(int(line.split(',')[3][7:11]))
+					if flag == 2:
+						vals = np.asarray(vals, dtype=float)
+						if fcst_type == 'deterministic':
+							vals[vals == -999.0] = np.nan
+						if fcst_type == 'probabilistic':
+							vals[vals == -1.0] = np.nan
+						all_vals.append(vals)
+						lats = []
+						vals = []
+					flag = 1
+			else:
+				if flag == 2:
+					vals = np.asarray(vals, dtype=float)
+					if fcst_type == 'deterministic':
+						vals[vals == -999.0] = np.nan
+					if fcst_type == 'probabilistic':
+						vals[vals == -1.0] = np.nan
+					all_vals.append(vals)
+					lats = []
+					vals = []
+				flag = 1
 		elif flag == 1 and line[0:4] != 'cpt:':
 			longs = line.strip().split('\t')
 			longs = [float(i) for i in longs]
@@ -1535,7 +1595,7 @@ def read_forecast( fcst_type, model, predictand, mpref, mons, mon, fyr):
 		vals[vals == -1.0] = np.nan
 	all_vals.append(vals)
 	all_vals = np.asarray(all_vals)
-	return lats, longs, all_vals
+	return lats, longs, all_vals, years
 
 # def readNetCDF_predictand(infile,outfile, predictand, wlo2, elo2, sla2, nla2, tar):
 # 	"""Function to read the user's predictand NetCDF file and write to CPT format.
@@ -2219,7 +2279,7 @@ def GetForecast_RFREQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, wetday
 		print("\n Forecast URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_RFREQ_"+tar+"_ini"+monf+str(fyr)+".tsv")
 
-def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,tar,ntrain,MOS,station):
+def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,tar,ntrain,MOS,station, xmodes_min, xmodes_max, ymodes_min, ymodes_max, ccamodes_min, ccamodes_max):
 		"""Function to write CPT namelist file
 
 		"""
@@ -2258,9 +2318,9 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 		f.write(str(elo1)+'\n')
 		if MOS=='CCA' or MOS=='PCR':
 			# Minimum number of X modes
-			f.write("1\n")
+			f.write("{}\n".format(xmodes_min))
 			# Maximum number of X modes
-			f.write("10\n")
+			f.write("{}\n".format(xmodes_max))
 
 			# Opens forecast (X) file
 			f.write("3\n")
@@ -2288,14 +2348,14 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 			f.write(str(elo2)+'\n')
 		if MOS=='CCA':
 			# Minimum number of Y modes
-			f.write("1\n")
+			f.write("{}\n".format(ymodes_min))
 			# Maximum number of Y modes
-			f.write("10\n")
+			f.write("{}\n".format(ymodes_max))
 
 			# Minimum number of CCA modes
-			f.write("1\n")
+			f.write("{}\n".format(ccamodes_min))
 			# Maximum number of CCAmodes
-			f.write("5\n")
+			f.write("{}\n".format(ccamodes_max))
 
 		# X training period
 		f.write("4\n")
@@ -2721,9 +2781,11 @@ def NGensemble(models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
 		print('Cross-validated prediction files successfully produced')
 	if id=='FCST_mu':
 		writeCPT(NG,'../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+		writeGrads(id, '../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.tsv', models, predictand, mpref, tar, mon, fyr, monf)
 		print('Forecast files successfully produced')
 	if id=='FCST_var':
 		writeCPT(NG,'../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+		writeGrads(id, '../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.tsv', models, predictand, mpref, tar, mon, fyr, monf)
 		print('Forecast error files successfully produced')
 
 def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
