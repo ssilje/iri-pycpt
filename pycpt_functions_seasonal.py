@@ -416,14 +416,6 @@ def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mon
 		facecolor='none')
 	for i in range(xdim):
 		for j in range(nsea):
-
-			axins_det = inset_axes(ax[i][j],
-				width="100%",  # width = 5% of parent_bbox width
-				height="5%",  # height : 50%
-				loc='lower right',
-				bbox_to_anchor=(0, -0.15, 1, 1),
-				bbox_transform=ax[i][j].transAxes,
-				borderpad=0.1 )
 			current_cmap = plt.get_cmap('BrBG')
 			current_cmap.set_bad('white',0.0)
 			current_cmap.set_under('white', 0.0)
@@ -457,11 +449,12 @@ def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mon
 			if j == 0:
 				ax[i][j].text(-0.25, 0.5, "Deterministic Forecast",rotation='vertical', verticalalignment='center', horizontalalignment='center', transform=ax[i][j].transAxes)
 
-			labels = ['Rainfall (mm)', 'Probability (%)']
+			labels = ['Rainfall (mm/month)', 'Probability (%)']
 			ax[i][j].set_title(mons[j])
 
 			#fancy deterministic
 			var = ng_detfcst_by_season[j]
+		#	bounds = [int(xx) for xx in np.linspace(0, np.nanmax(var), 11)]
 			CS_det = ax[i][j].pcolormesh(np.linspace(longs[0], longs[-1],num=len(longs)), np.linspace(lats[0], lats[-1], num=len(lats)), var,
 				#norm=MidpointNormalize(midpoint=0.),
 				cmap=current_cmap)
@@ -475,7 +468,7 @@ def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mon
 			else:
 				#fancy deterministic cb bottom
 				axins_det = inset_axes(ax[i][j],width="100%",  height="5%",  loc='lower center',bbox_to_anchor=(-0.1, -0.15, 1.1, 1), bbox_transform=ax[i][j].transAxes,borderpad=0.1 )
-				cbar_bdet = fig.colorbar(CS_det, ax=ax[i][j],  cax=axins_det, orientation='horizontal', pad = 0.02)
+				cbar_bdet = fig.colorbar(CS_det, ax=ax[i][j],  cax=axins_det, orientation='horizontal', pad = 0.02)#, ticks=bounds)
 				cbar_bdet.set_label(labels[i])
 	fig.savefig('./output/figures/NG_Deterministic_RealtimeForecasts.png', dpi=500, bbox_inches='tight')
 
