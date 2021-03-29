@@ -3,8 +3,6 @@
 #Collaborators: T Turkington (NEA), Bohar Singh, SJ Mason, Liseth Campos (DIMAR), Ana Lucía Caicedo (DIMAR)
 #Notes: be sure it matches version of PyCPT
 #Log: see version.log in GitHub
-# AWR: edits made 20-Mar-2020: (1) indentation errors fixed; (2) ‘mpref’ argument to Prepfiles & GetForecast (L131, L143, L166, L1648). Argument added to calling program too (PyCPT_s2sv1.6.ipynb); (3) added mpref if-statement to GetForecasts (L1672) to only get the individual ensemble members for noMOS; (4) Revised dictionary entry for CFSv2 *forecast* file from S2S database (L1659)
-
 
 import os
 import warnings
@@ -134,7 +132,7 @@ def ncdump(nc_fid, verb=True):
                 print_ncattr(var)
     return nc_attrs, nc_dims, nc_vars
 
-def PrepFiles(rainfall_frequency, threshold_pctle, wlo1, wlo2,elo1, elo2,sla1, sla2,nla1, nla2, day1, day2, fday, nday, fyr, mon, os, authkey, wk, wetday_threshold, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, force_download,mpref, dic_s2s):
+def PrepFiles(rainfall_frequency, threshold_pctle, wlo1, wlo2,elo1, elo2,sla1, sla2,nla1, nla2, day1, day2, fday, nday, fyr, mon, os, authkey, wk, wetday_threshold, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, GEPShdate1, force_download,mpref, dic_s2s):
 	"""Function to download (or not) the needed files"""
 	if obs_source=='userdef':
 		GetHindcastsUser(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, nday, training_season, hstep, model, hdate_last, force_download, dic_s2s)
@@ -174,10 +172,10 @@ def PrepFiles(rainfall_frequency, threshold_pctle, wlo1, wlo2,elo1, elo2,sla1, s
 			# else:
 			#GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, training_season, hstep, model, force_download)
 			#nday added after nlag for GEFS & CFSv2
-			GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, nday, training_season, hstep, model, hdate_last, force_download, dic_s2s)
+			GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, authkey, wk, nlag, nday, training_season, hstep, model, hdate_last, GEPShdate1, force_download, dic_s2s)
 			print('Hindcasts file ready to go')
 			print('----------------------------------------------')
-			GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, authkey, wk, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, force_download, dic_s2s)
+			GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, authkey, wk, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, GEPShdate1, force_download, dic_s2s)
 			print('Obs:precip file ready to go')
 			print('----------------------------------------------')
 			GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source,obsclimo_source, authkey, wk, nlag, model, hdate_last, threshold_pctle,training_season,wetday_threshold,force_download,mpref, dic_s2s)
@@ -1760,7 +1758,7 @@ def readNetCDF_Forecast(infile, outfile, monf, fyr, tgti, tgtf, tar, wlo1, elo1,
                 f.write("\n") #next line
         f.close()
 
-def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download, dic_s2s):
+def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, GEPShdate1, force_download, dic_s2s):
 	nwi=4  #number of weeks to use for real-time ECMWF training period (2 initializations per week) --Send to namelist in the future
 	if not force_download:
 		try:
@@ -1854,7 +1852,7 @@ def GetHindcastsUser(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week
 		get_ipython().system("gunzip -f model_precip_"+mon+"_wk"+str(week)+".tsv.gz")
 		#! curl -g -k -b '__dlauth_id='$key'' ''$url'' > model_precip_${mo}.tsv
 
-def GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, force_download, dic_s2s):
+def GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, training_season, hstep, model, obs_source, obsclimo_source, hdate_last, GEPShdate1, force_download, dic_s2s):
 	nwi=4  #number of weeks to use for real-time ECMWF training period (2 initializations per week) --Send to namelist in the future
 	if not force_download:
 		try:
