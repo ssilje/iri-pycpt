@@ -60,16 +60,16 @@ def lines_that_end_with(string, fp):
 def exceedprob(x,dof,lo,sc):
 	return t.sf(x, dof, loc=lo, scale=sc)*100
 
-def writeGrads(fcsttype, filename, models, predictand, mpref, tgt, mon, fyr, monf):
+def writeGrads(fcsttype, filename, models, predictor, predictand, mpref, tgt, mon, fyr, monf):
 	if fcsttype == 'FCST_Obs':
-		lats, longs, data, years = read_forecast('deterministic', models[0], predictand, mpref, tgt, mon, fyr, filename='../input/NextGen'+'_'+predictand+ '_' + tgt+'_ini'+monf+'.tsv', converting_tsv=True)
+		lats, longs, data, years = read_forecast('deterministic', models[0], predictor, predictand, mpref, tgt, mon, fyr, filename='../input/NextGen'+'_'+predictor+predictand+ '_' + tgt+'_ini'+monf+'.tsv', converting_tsv=True)
 	else:
-		lats, longs, data, years = read_forecast('deterministic', models[0], predictand, mpref, tgt, mon, fyr, filename='../output/NextGen'+'_'+predictand+predictand+'_'+mpref+fcsttype+'_'+tgt+'_'+monf+str(fyr)+'.tsv', converting_tsv=True)
+		lats, longs, data, years = read_forecast('deterministic', models[0], predictor, predictand, mpref, tgt, mon, fyr, filename='../output/NextGen'+'_'+predictor+predictand+'_'+mpref+fcsttype+'_'+tgt+'_'+monf+str(fyr)+'.tsv', converting_tsv=True)
 	W, XD = len(longs), longs[1] - longs[0]
 	H, YD = len(lats), lats[0] - lats[1]
 	T = len(years)
-	f=open('../output/NextGen' +'_'+predictand+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.ctl','w')
-	f.write('DSET {}\n'.format('./output/NextGen' +'_'+predictand+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.dat'))
+	f=open('../output/NextGen' +'_'+predictor+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.ctl','w')
+	f.write('DSET {}\n'.format('./output/NextGen' +'_'+predictor+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.dat'))
 	f.write('TITLE {}\n'.format('NextGen_{}'.format(fcsttype)))
 	f.write('UNDEF -999.000000\n')
 	f.write('OPTIONS yrev sequential little_endian\n')
@@ -81,9 +81,9 @@ def writeGrads(fcsttype, filename, models, predictand, mpref, tgt, mon, fyr, mon
 	f.write('\ta\t0\t99\t{}                   unitless\n'.format(predictand))
 	f.write('ENDVARS')
 	f.close()
-	print('Wrote {}'.format('../output/NextGen' +'_'+predictand+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.ctl'))
+	print('Wrote {}'.format('../output/NextGen' +'_'+predictor+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.ctl'))
 
-	f=open('../output/NextGen'+'_'+predictand+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.dat','wb')
+	f=open('../output/NextGen'+'_'+predictor+predictand+'_'+mpref+fcsttype+ '_' +tgt+'_'+monf+str(fyr)+'.dat','wb')
 	for t in range(T):
 		data[t][np.isnan(data[t])] = -999.000
 		f.write(struct.pack('i', int(W*H*np.dtype('float32').itemsize)))
@@ -92,7 +92,7 @@ def writeGrads(fcsttype, filename, models, predictand, mpref, tgt, mon, fyr, mon
 				f.write(struct.pack('f', float(data[t][i][j])))
 		f.write(struct.pack('i', int(W*H*np.dtype('float32').itemsize)))
 	f.close()
-	print('Wrote {}'.format('../output/NextGen' +'_'+predictand+predictand+'_'+mpref+fcsttype + '_' +tgt+'_'+monf+str(fyr)+'.dat'))
+	print('Wrote {}'.format('../output/NextGen' +'_'+predictor+predictand+'_'+mpref+fcsttype + '_' +tgt+'_'+monf+str(fyr)+'.dat'))
 
 
 class MidpointNormalize(colors.Normalize):
@@ -155,7 +155,7 @@ def replaceAll(file,searchExp,replaceExp):
 def setup_params(PREDICTOR,PREDICTAND,obs,MOS,tini,tend):
 	"""PyCPT setup"""
 	# Predictor switches
-	if PREDICTOR=='PRCP' or PREDICTOR=='UQ' or PREDICTOR=='VQ' or PREDICTOR=='T2M' or PREDICTOR=='TMAX' or PREDICTOR=='TMIN':
+	if PREDICTOR=='PRCP' or PREDICTOR=='UQ' or PREDICTOR=='VQ' or PREDICTOR=='UA' or PREDICTOR=='VA' or PREDICTOR=='T2M' or PREDICTOR=='TMAX' or PREDICTOR=='TMIN' or PREDICTOR=='SST':
 		rainfall_frequency = False  #False uses total rainfall for forecast period, True uses frequency of rainy days
 		threshold_pctle = False
 		wetday_threshold = -999 #WET day threshold (mm) --only used if rainfall_frequency is True!
@@ -210,7 +210,7 @@ def setup_params(PREDICTOR,PREDICTAND,obs,MOS,tini,tend):
 	fprefix = PREDICTOR
 	return rainfall_frequency,threshold_pctle,wetday_threshold,obs_source,hdate_last,mpref,L,ntrain,fprefix
 
-def plt_ng_probabilistic(models,PREDICTAND,loni,lone,lati,late,fprefix,mpref,tgts, mon, fyr, use_ocean):
+def plt_ng_probabilistic(models,PREDICTOR,PREDICTAND,loni,lone,lati,late,fprefix,mpref,tgts, mon, fyr, use_ocean):
 	cbar_loc, fancy = 'bottom', True
 	nmods=len(models)
 	nsea=len(tgts)
@@ -221,9 +221,9 @@ def plt_ng_probabilistic(models,PREDICTAND,loni,lone,lati,late,fprefix,mpref,tgt
 	for i in range(nmods):
 		for j in range(nsea):
 			if platform.system() == "Windows":
-				plats, plongs, av, years = read_forecast_bin('probabilistic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+				plats, plongs, av, years = read_forecast_bin('probabilistic', models[i], PREDICTOR, PREDICTAND, mpref, tgts[j], mon, fyr )
 			else:
-				plats, plongs, av, years = read_forecast('probabilistic', models[i], PREDICTAND, mpref, tgts[j], mon, fyr )
+				plats, plongs, av, years = read_forecast('probabilistic', models[i], PREDICTOR, PREDICTAND, mpref, tgts[j], mon, fyr )
 			for kl in range(av.shape[0]):
 				list_probabilistic_by_season[j][kl].append(av[kl])
 			#if platform.system() == "Windows":
@@ -366,7 +366,7 @@ def plt_ng_probabilistic(models,PREDICTAND,loni,lone,lati,late,fprefix,mpref,tgt
 	fig.savefig('./output/figures/NG_Probabilistic_RealtimeForecasts.png', dpi=500, bbox_inches='tight')
 
 
-def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mons, mon, fyr, use_ocean):
+def plt_ng_deterministic(models,predictor,predictand,loni,lone,lati,late,fprefix,mpref,mons, mon, fyr, use_ocean):
 	"""A simple function for ploting the statistical scores
 
 	PARAMETERS
@@ -390,7 +390,7 @@ def plt_ng_deterministic(models,predictand,loni,lone,lati,late,fprefix,mpref,mon
 			#list_probabilistic_by_season[j][0].append(av[0])
 			#list_probabilistic_by_season[j][1].append(av[1])
 			#list_probabilistic_by_season[j][2].append(av[2])
-			dlats, dlongs, av, years = read_forecast('deterministic', models[i], predictand, mpref, mons[j], mon, fyr )
+			dlats, dlongs, av, years = read_forecast('deterministic', models[i], predictor, predictand, mpref, mons[j], mon, fyr )
 			list_det_by_season[j].append(av[0])
 
 	ng_probfcst_by_season = []
@@ -554,6 +554,36 @@ def PrepFiles(fprefix, predictand, threshold_pctle, tini,tend, wlo1, wlo2,elo1, 
 		print('Obs:precip file ready to go')
 		print('----------------------------------------------')
 		GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea)
+		print('Forecasts file ready to go')
+		print('----------------------------------------------')
+	elif fprefix=='UA':
+		GetHindcasts_UA(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea)
+		print('Hindcasts file ready to go')
+		print('----------------------------------------------')
+		GetObs(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_source, hdate_last, force_download,station, dic_sea)
+		print('Obs:precip file ready to go')
+		print('----------------------------------------------')
+		GetForecast_UA(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea)
+		print('Forecasts file ready to go')
+		print('----------------------------------------------')
+	elif fprefix=='SST':
+		GetHindcasts_SST(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea)
+		print('Hindcasts file ready to go')
+		print('----------------------------------------------')
+		GetObs(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_source, hdate_last, force_download,station, dic_sea)
+		print('Obs:precip file ready to go')
+		print('----------------------------------------------')
+		GetForecast_SST(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea)
+		print('Forecasts file ready to go')
+		print('----------------------------------------------')
+	elif fprefix=='VA':
+		GetHindcasts_VA(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea)
+		print('Hindcasts file ready to go')
+		print('----------------------------------------------')
+		GetObs(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_source, hdate_last, force_download,station, dic_sea)
+		print('Obs:precip file ready to go')
+		print('----------------------------------------------')
+		GetForecast_VA(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea)
 		print('Forecasts file ready to go')
 		print('----------------------------------------------')
 	else:
@@ -1159,7 +1189,7 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 	cbar.set_label('Probability (%)') #, rotation=270)
 	f.close()
 
-def pltmapff(models,predictand,thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,monf,fyr,mons,tgts):
+def pltmapff(models,predictor,predictand,thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,monf,fyr,mons,tgts):
 	"""A simple function for ploting probabilistic forecasts in flexible format (for a given threshold)
 
 	PARAMETERS
@@ -1185,7 +1215,7 @@ def pltmapff(models,predictand,thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mp
 	dof=ntrain
 	nmods=len(models)
 	tar=tgts[mons.index(monf)]
-	writeGrads('FCST_Obs', '../input/NextGen_'+predictand+'_'+tar+'_ini'+monf+'.tsv', models, predictand, mpref, tar, monf, fyr, monf)
+	writeGrads('FCST_Obs', '../input/NextGen_'+predictand+'_'+tar+'_ini'+monf+'.tsv', models, predictor, predictand, mpref, tar, monf, fyr, monf)
 
 	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
 	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
@@ -1320,7 +1350,7 @@ def pltmapff(models,predictand,thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mp
 		cbar.set_label(label) #, rotation=270)
 		f.close()
 
-def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,monf,fyr,mons,tgts):
+def pltprobff(models,predictor,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,monf,fyr,mons,tgts):
 	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
 
 	PARAMETERS
@@ -1468,22 +1498,22 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 	#cbar.set_label(label) #, rotation=270)
 	f.close()
 
-def read_forecast_bin( fcst_type, model, predictand, mpref, mons, mon, fyr):
+def read_forecast_bin( fcst_type, model, predictor, predictand, mpref, mons, mon, fyr):
 	if fcst_type == 'deterministic':
-		f = open("./output/" + model + '_' + predictand + predictand +'_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.dat', 'rb')
+		f = open("./output/" + model + '_' + predictor + predictand +'_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.dat', 'rb')
 	elif fcst_type == 'probabilistic':
-		f = open("./output/" + model + '_' + predictand +predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.dat', 'rb')
+		f = open("./output/" + model + '_' + predictor +predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.dat', 'rb')
 	else:
 		print('invalid fcst_type')
 		return
 
 	if fcst_type == 'deterministic':
-		with  open("./output/" + model + '_' + predictand +predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
+		with  open("./output/" + model + '_' + predictor +predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
 			for line in lines_that_contain("XDEF", fp): #lons
 				W = int(line.split()[1])
 				XD= float(line.split()[4])
 				Wi = float(line.split()[3])
-		with  open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
+		with  open("./output/" + model + '_' + predictor + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
 			for line in lines_that_contain("YDEF", fp):  #lats
 				H = int(line.split()[1])
 				YD= float(line.split()[4])
@@ -1502,12 +1532,12 @@ def read_forecast_bin( fcst_type, model, predictand, mpref, mons, mon, fyr):
 		return lats, lons, np.asarray([var])
 
 	if fcst_type == 'probabilistic':
-		with  open("./output/" + model + '_' + predictand + predictand +'_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
+		with  open("./output/" + model + '_' + predictor + predictand +'_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
 			for line in lines_that_contain("XDEF", fp): #lons
 				W = int(line.split()[1])
 				XD= float(line.split()[4])
 				Wi = float(line.split()[3])
-		with  open("./output/" + model + '_' + predictand +predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
+		with  open("./output/" + model + '_' + predictor +predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.ctl', 'r') as fp:
 			for line in lines_that_contain("YDEF", fp):  #lats
 				H = int(line.split()[1])
 				YD= float(line.split()[4])
@@ -1528,15 +1558,15 @@ def read_forecast_bin( fcst_type, model, predictand, mpref, mons, mon, fyr):
 		return lats, lons, np.asarray(vars)
 
 
-def read_forecast( fcst_type, model, predictand, mpref, mons, mon, fyr, filename='None', converting_tsv=False):
+def read_forecast( fcst_type, model, predictor, predictand, mpref, mons, mon, fyr, filename='None', converting_tsv=False):
 	if filename == 'None':
 		if fcst_type == 'deterministic':
 			try:
-				f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
+				f = open("./output/" + model + '_' + predictor + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
 			except:
-				f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.tsv', 'r')
+				f = open("./output/" + model + '_' + predictor + predictand + '_' + mpref + 'FCST_mu_' +mons + '_' +mon+str(fyr)+'.tsv', 'r')
 		elif fcst_type == 'probabilistic':
-			f = open("./output/" + model + '_' + predictand + predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
+			f = open("./output/" + model + '_' + predictor + predictand + '_' + mpref + 'FCST_P_' +mons + '_' +mon+str(fyr)+'.txt', 'r')
 		else:
 			print('invalid fcst_type')
 			return
@@ -1910,7 +1940,7 @@ def GetHindcasts_TMAX(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar
 #                }
 		# calls curl to download data
 		#url=dic[model]
-		url=eval(dic_sea[model+'_hcst_TAX'])
+		url=eval(dic_sea[model+'_hcst_TMAX'])
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_TMAX_"+tar+"_ini"+mon+".tsv")
 
@@ -2003,7 +2033,65 @@ def GetHindcasts_VQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, 
 		url=eval(dic_sea[model+'_hcst_VQ'])
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_VQ_"+tar+"_ini"+mon+".tsv")
+        
+def GetHindcasts_UA(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea):
+	if not force_download:
+		try:
+			ff=open(model+"_UA_"+tar+"_ini"+mon+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+#dictionary:
+#		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.ENSEMBLE/.PGBF/.pressure_level/.VGRD/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.ENSEMBLE/.PGBF/.pressure_level/.SPFH/mul/P/850/VALUE/S/%2812%20'+mon+'%20'+str(tini)+'-'+str(tend)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+#		}
+		# calls curl to download data
+		#url=dic[model]
+		url=eval(dic_sea[model+'_hcst_UA'])
+		print("\n Hindcasts URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"_UA_"+tar+"_ini"+mon+".tsv")
+        
 
+def GetHindcasts_VA(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea):
+	if not force_download:
+		try:
+			ff=open(model+"_VA_"+tar+"_ini"+mon+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+		#dictionary:
+#		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.ENSEMBLE/.PGBF/.pressure_level/.VGRD/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.ENSEMBLE/.PGBF/.pressure_level/.SPFH/mul/P/850/VALUE/S/%281%20'+mon+'%20'+str(tini)+'-'+str(tend)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+#		}
+		# calls curl to download data
+		#url=dic[model]
+		url=eval(dic_sea[model+'_hcst_VA'])
+		print("\n Hindcasts URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"_VA_"+tar+"_ini"+mon+".tsv")
+        
+def GetHindcasts_SST(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea):
+	if not force_download:
+		try:
+			ff=open(model+"_SST_"+tar+"_ini"+mon+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+		#dictionary:
+#		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.ENSEMBLE/.PGBF/.pressure_level/.VGRD/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.ENSEMBLE/.PGBF/.pressure_level/.SPFH/mul/P/850/VALUE/S/%281%20'+mon+'%20'+str(tini)+'-'+str(tend)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+#		}
+		# calls curl to download data
+		#url=dic[model]
+		url=eval(dic_sea[model+'_hcst_SST'])
+		print("\n Hindcasts URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"_SST_"+tar+"_ini"+mon+".tsv")
+        
 def GetObs(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_source, hdate_last, force_download,station, dic_sea):
 	if not force_download:
 		try:
@@ -2040,7 +2128,7 @@ def GetObs_T2M(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_sourc
 	if force_download:
 #		obs_source = 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.CPC/.temperature/.daily/.tmin'
 #		url='https://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.CPC/.temperature/.daily/tmax/tmin/add/2/div/T/(1%20Jan%20'+str(tini)+')/(31%20Dec%20'+str(tend)+')/RANGE/T/%28'+tar+'%20'+str(tini)+'-'+str(tend)+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
-		url=eval(dic_sea[obs+'_obs_T2M'])
+		url=eval(dic_sea[obs+'obs_T2M'])
 		print("\n Obs (Tmin) data URL: \n\n "+url)
 		get_ipython().system("curl -k '"+url+"' > obs_T2M"+"_"+tar+".tsv")
 
@@ -2056,7 +2144,7 @@ def GetObs_TMAX(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_sour
 	if force_download:
 #		obs_source = 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.CPC/.temperature/.daily/.tmax'
 #		url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/(1%20Jan%20'+str(tini)+')/(31%20Dec%20'+str(tend)+')/RANGE/T/%28'+tar+'%20'+str(tini)+'-'+str(tend)+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
-		url=eval(dic_sea[obs+'_obs_TMAX'])
+		url=eval(dic_sea[obs+'obs_TMAX'])
 		print("\n Obs (Tmax) data URL: \n\n "+url)
 		get_ipython().system("curl -k '"+url+"' > obs_TMAX"+"_"+tar+".tsv")
 
@@ -2072,7 +2160,7 @@ def GetObs_TMIN(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_sour
 	if force_download:
 #		obs_source = 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.CPC/.temperature/.daily/.tmin'
 #		url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/(1%20Jan%20'+str(tini)+')/(31%20Dec%20'+str(tend)+')/RANGE/T/%28'+tar+'%20'+str(tini)+'-'+str(tend)+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
-		url=eval(dic_sea[obs+'_obs_TMIN'])
+		url=eval(dic_sea[obs+'obs_TMIN'])
 		print("\n Obs (Tmin) data URL: \n\n "+url)
 		get_ipython().system("curl -k '"+url+"' > obs_TMIN"+"_"+tar+".tsv")
 
@@ -2245,6 +2333,65 @@ def GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, fo
 
 		print("\n Forecast URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_VQ_"+tar+"_ini"+monf+str(fyr)+".tsv")
+        
+def GetForecast_UA(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea):
+	if not force_download:
+		try:
+			ff=open(model+"fcst_UA_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+		#dictionary:
+#		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.VGRD/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.SPFH/mul/P/850/VALUE/S/%281%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+#		}
+		# calls curl to download data
+#		url=dic[model]
+		url=eval(dic_sea[model+'_fcst_UA'])
+		print("\n Forecast URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"fcst_UA_"+tar+"_ini"+monf+str(fyr)+".tsv")
+
+def GetForecast_VA(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea):
+	if not force_download:
+		try:
+			ff=open(model+"fcst_VA_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+		#dictionary:
+#		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.VGRD/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.SPFH/mul/P/850/VALUE/S/%281%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+#		}
+		# calls curl to download data
+#		url=dic[model]
+		url=eval(dic_sea[model+'_fcst_VA'])
+
+		print("\n Forecast URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"fcst_VA_"+tar+"_ini"+monf+str(fyr)+".tsv")
+        
+def GetForecast_SST(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea):
+	if not force_download:
+		try:
+			ff=open(model+"fcst_SST_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
+			force_download = True
+	if force_download:
+		#dictionary:
+#		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.VGRD/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.SPFH/mul/P/850/VALUE/S/%281%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+#		}
+		# calls curl to download data
+#		url=dic[model]
+		url=eval(dic_sea[model+'_fcst_SST'])
+
+		print("\n Forecast URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"fcst_SST_"+tar+"_ini"+monf+str(fyr)+".tsv")     
 
 def GetForecast_RFREQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, wetday_threshold, model, force_download, dic_sea):
 	if not force_download:
@@ -2730,7 +2877,7 @@ def ensemblefiles(models,work):
 	print("Compressed file "+work+"_NextGen.tgz created in output/NextGen/")
 	print("Now send that file to your contact at the IRI")
 
-def NGensemble(models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
+def NGensemble(models,fprefix,predictor,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
 	"""A simple function for computing the NextGen ensemble
 
 	PARAMETERS
@@ -2770,15 +2917,15 @@ def NGensemble(models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
 	#Now write output:
 	#writeCPT(NG,'../output/NextGen_'+fprefix+'_'+tar+'_ini'+mon+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
 	if id=='FCST_xvPr':
-		writeCPT(NG,'../input/NextGen_'+fprefix+'_'+tar+'_ini'+mon+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+		writeCPT(NG,'../input/NextGen_'+predictor+predictand+'_'+tar+'_ini'+mon+'.tsv',models,predictor,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
 		print('Cross-validated prediction files successfully produced')
 	if id=='FCST_mu':
-		writeCPT(NG,'../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
-		writeGrads(id, '../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.tsv', models, predictand, mpref, tar, mon, fyr, monf)
+		writeCPT(NG,'../output/NextGen_'+predictor+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.tsv',models,predictor,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+		writeGrads(id, '../output/NextGen_'+predictor+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.tsv', models, predictor, predictand, mpref, tar, mon, fyr, monf)
 		print('Forecast files successfully produced')
 	if id=='FCST_var':
-		writeCPT(NG,'../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
-		writeGrads(id, '../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.tsv', models, predictand, mpref, tar, mon, fyr, monf)
+		writeCPT(NG,'../output/NextGen_'+predictor+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.tsv',models,predictor,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+		writeGrads(id, '../output/NextGen_'+predictor+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.tsv', models, predictor, predictand, mpref, tar, mon, fyr, monf)
 		print('Forecast error files successfully produced')
 
 def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
