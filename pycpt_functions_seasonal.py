@@ -62,7 +62,7 @@ def exceedprob(x,dof,lo,sc):
 
 def writeGrads(fcsttype, filename, models, predictor, predictand, mpref, tgt, mon, fyr, monf):
 	if fcsttype == 'FCST_Obs':
-		lats, longs, data, years = read_forecast('deterministic', models[0], predictor, predictand, mpref, tgt, mon, fyr, filename='../input/NextGen'+'_'+predictor+predictand+ '_' + tgt+'_ini'+monf+'.tsv', converting_tsv=True)
+		lats, longs, data, years = read_forecast('deterministic', models[0], predictor, predictand, mpref, tgt, mon, fyr, filename='../input/NextGen'+'_'+predictor+ '_' + tgt+'_ini'+monf+'.tsv', converting_tsv=True)
 	else:
 		lats, longs, data, years = read_forecast('deterministic', models[0], predictor, predictand, mpref, tgt, mon, fyr, filename='../output/NextGen'+'_'+predictor+predictand+'_'+mpref+fcsttype+'_'+tgt+'_'+monf+str(fyr)+'.tsv', converting_tsv=True)
 	W, XD = len(longs), longs[1] - longs[0]
@@ -1215,7 +1215,7 @@ def pltmapff(models,predictor,predictand,thrs,ispctl,ntrain,loni,lone,lati,late,
 	dof=ntrain
 	nmods=len(models)
 	tar=tgts[mons.index(monf)]
-	writeGrads('FCST_Obs', '../input/NextGen_'+predictand+'_'+tar+'_ini'+monf+'.tsv', models, predictor, predictand, mpref, tar, monf, fyr, monf)
+	writeGrads('FCST_Obs', '../input/NextGen_'+predictor+'_'+tar+'_ini'+monf+'.tsv', models, predictor, predictand, mpref, tar, monf, fyr, monf)
 
 	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
 	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
@@ -2033,7 +2033,7 @@ def GetHindcasts_VQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, 
 		url=eval(dic_sea[model+'_hcst_VQ'])
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_VQ_"+tar+"_ini"+mon+".tsv")
-        
+
 def GetHindcasts_UA(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea):
 	if not force_download:
 		try:
@@ -2052,7 +2052,7 @@ def GetHindcasts_UA(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, 
 		url=eval(dic_sea[model+'_hcst_UA'])
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_UA_"+tar+"_ini"+mon+".tsv")
-        
+
 
 def GetHindcasts_VA(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea):
 	if not force_download:
@@ -2072,7 +2072,7 @@ def GetHindcasts_VA(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, 
 		url=eval(dic_sea[model+'_hcst_VA'])
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_VA_"+tar+"_ini"+mon+".tsv")
-        
+
 def GetHindcasts_SST(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea):
 	if not force_download:
 		try:
@@ -2091,7 +2091,7 @@ def GetHindcasts_SST(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar,
 		url=eval(dic_sea[model+'_hcst_SST'])
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_SST_"+tar+"_ini"+mon+".tsv")
-        
+
 def GetObs(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_source, hdate_last, force_download,station, dic_sea):
 	if not force_download:
 		try:
@@ -2333,7 +2333,7 @@ def GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, fo
 
 		print("\n Forecast URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_VQ_"+tar+"_ini"+monf+str(fyr)+".tsv")
-        
+
 def GetForecast_UA(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea):
 	if not force_download:
 		try:
@@ -2372,7 +2372,7 @@ def GetForecast_VA(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, fo
 
 		print("\n Forecast URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_VA_"+tar+"_ini"+monf+str(fyr)+".tsv")
-        
+
 def GetForecast_SST(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea):
 	if not force_download:
 		try:
@@ -2391,7 +2391,7 @@ def GetForecast_SST(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, f
 		url=eval(dic_sea[model+'_fcst_SST'])
 
 		print("\n Forecast URL: \n\n "+url)
-		get_ipython().system("curl -k "+url+" > "+model+"fcst_SST_"+tar+"_ini"+monf+str(fyr)+".tsv")     
+		get_ipython().system("curl -k "+url+" > "+model+"fcst_SST_"+tar+"_ini"+monf+str(fyr)+".tsv")
 
 def GetForecast_RFREQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, wetday_threshold, model, force_download, dic_sea):
 	if not force_download:
@@ -2917,7 +2917,7 @@ def NGensemble(models,fprefix,predictor,predictand,mpref,id,tar,mon,tgti,tgtf,mo
 	#Now write output:
 	#writeCPT(NG,'../output/NextGen_'+fprefix+'_'+tar+'_ini'+mon+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
 	if id=='FCST_xvPr':
-		writeCPT(NG,'../input/NextGen_'+predictor+predictand+'_'+tar+'_ini'+mon+'.tsv',models,predictor,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+		writeCPT(NG,'../input/NextGen_'+predictor+'_'+tar+'_ini'+mon+'.tsv',models,predictor,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
 		print('Cross-validated prediction files successfully produced')
 	if id=='FCST_mu':
 		writeCPT(NG,'../output/NextGen_'+predictor+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.tsv',models,predictor,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
