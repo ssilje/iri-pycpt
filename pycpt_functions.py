@@ -448,7 +448,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 	cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 	cbar.set_label(label) #, rotation=270)
 
-def plteofs(model,mode,M,loni,lone,lati,late,fprefix,mpref,training_season,nwk, wki):
+def plteofs(model,mode,M,loni,lone,lati,late,fprefix,mpref,training_season,nwk, wk):
 	"""A simple function for ploting EOFs computed by CPT"""
 
 	if mpref=='None':
