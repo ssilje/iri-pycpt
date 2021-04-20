@@ -718,7 +718,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 				YDy= float(line.split()[4])
 		eofy=np.empty([M,Hy,Wy])  #define array for later use
 
-	eofx=np.empty([M,H,W])  #define array for later use
+	eofx=np.empty([nmods, nsea, M,H,W])  #define array for later use
 
 	k=0
 	for tar in mons:
@@ -778,8 +778,10 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 
 	nrow=0
 	for model in models:
+		m_ndx = models.index(model)
 		nrow=nrow+1 #first model is in row=2 and nrow=1
 		for tar in mons:
+			s_ndx = mons.index(tar)
 			k=k+1
 			mon=mol[tgts.index(tar)]
 			ax = plt.subplot(nmods+1,nsea, k, projection=ccrs.PlateCarree()) #nmods+obs
@@ -840,12 +842,12 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 				numval=int(recl/np.dtype('float32').itemsize) #this if for each time/EOF stamp
 				A0=np.fromfile(f,dtype='float32',count=numval)
 				endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
-				eofx[mo,:,:]= np.transpose(A0.reshape((W, H), order='F'))
+				eofx[m_ndx, s_ndx, mo,:,:]= np.transpose(A0.reshape((W, H), order='F'))
 
 			eofx[eofx==-999.]=np.nan #nans
 
 			cmap =current_cmap
-			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), eofx[mode,:,:],
+			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), eofx[m_ndx, s_ndx,mode,:,:],
 			vmin=-.1,vmax=.1,
 			cmap=current_cmap,
 			transform=ccrs.PlateCarree())
@@ -873,6 +875,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 		lati: southern latitude
 		late: northern latitude
 	"""
+	vmi=0
 	nmods=len(models)
 	nsea=len(mons)  #number of seasons and columns
 	#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
@@ -977,6 +980,19 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 				#current_cmap.set_bad(color='white')
 				#current_cmap.set_under('white', 1.0)
 			else:
+				vmi, vma = 0, 0
+				for model2 in models: 
+					#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+					f=open('../output/'+model2+'_'+fprefix+predictand+'_'+mpref+'_'+score+'_'+tar+'_'+mon+'.dat','rb')
+					recl=struct.unpack('i',f.read(4))[0]
+					numval=int(recl/np.dtype('float32').itemsize)
+					#Now we read the field
+					A=np.fromfile(f,dtype='float32',count=numval)
+					var = np.transpose(A.reshape((W, H), order='F'))
+					var[var==-999.]=np.nan
+					if -1*max(np.nanmax(var),np.abs(np.nanmin(var))) < vmi: 
+						vmi=-max(np.nanmax(var),np.abs(np.nanmin(var)))
+						vma=-vmi
 				#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
 				f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_'+score+'_'+tar+'_'+mon+'.dat','rb')
 				recl=struct.unpack('i',f.read(4))[0]
@@ -985,8 +1001,6 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 				A=np.fromfile(f,dtype='float32',count=numval)
 				var = np.transpose(A.reshape((W, H), order='F'))
 				var[var==-999.]=np.nan
-				vmi=-max(np.nanmax(var),np.abs(np.nanmin(var)))
-				vma=-vmi
 				#define colorbars, depending on each score	--This can be easily written as a function
 				if score == '2AFC':
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
