@@ -491,7 +491,7 @@ def readGrADSctl(models,fprefix,predictand,mpref,id,tar,monf,fyr):
 			TD= 1  #not used
 	return (W, Wi, XD, H, Hi, YD, T, Ti, TD)
 
-def PrepFiles(fprefix, predictand, threshold_pctle, tini,tend, wlo1, wlo2,elo1, elo2, sla1, sla2, nla1, nla2, tgti, tgtf, mon, monf, fyr, os, wetday_threshold, tar, model, obs, obs_source, hdate_last, force_download, station, dic_sea):
+def PrepFiles(fprefix, predictand, threshold_pctle, tini,tend, wlo1, wlo2,elo1, elo2, sla1, sla2, nla1, nla2, tgti, tgtf, mon, monf, fyr, os, wetday_threshold, tar, model, obs, obs_source, hdate_last, force_download, station, dic_sea, pressure):
 	"""Function to download (or not) the needed files"""
 	if fprefix=='RFREQ':
 		GetObs_RFREQ(predictand, tini,tend,wlo2, elo2, sla2, nla2, wetday_threshold, threshold_pctle, tar, obs_source, hdate_last, force_download,station, dic_sea)
@@ -537,23 +537,23 @@ def PrepFiles(fprefix, predictand, threshold_pctle, tini,tend, wlo1, wlo2,elo1, 
 		print('Forecasts file ready to go')
 		print('----------------------------------------------')
 	elif fprefix=='UQ':
-		GetHindcasts_UQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea)
+		GetHindcasts_UQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea, pressure)
 		print('Hindcasts file ready to go')
 		print('----------------------------------------------')
 		GetObs(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_source, hdate_last, force_download,station, dic_sea)
 		print('Obs:precip file ready to go')
 		print('----------------------------------------------')
-		GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea)
+		GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea, pressure)
 		print('Forecasts file ready to go')
 		print('----------------------------------------------')
 	elif fprefix=='VQ':
-		GetHindcasts_VQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea)
+		GetHindcasts_VQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea, pressure)
 		print('Hindcasts file ready to go')
 		print('----------------------------------------------')
 		GetObs(predictand, tini,tend,wlo2, elo2, sla2, nla2, tar, obs, obs_source, hdate_last, force_download,station, dic_sea)
 		print('Obs:precip file ready to go')
 		print('----------------------------------------------')
-		GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea)
+		GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea, pressure)
 		print('Forecasts file ready to go')
 		print('----------------------------------------------')
 	elif fprefix=='UA':
@@ -2009,7 +2009,7 @@ def GetHindcasts_RFREQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, we
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_RFREQ_"+tar+"_ini"+mon+".tsv")
 
-def GetHindcasts_UQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea):
+def GetHindcasts_UQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea, pressure):
 	if not force_download:
 		try:
 			ff=open(model+"_UQ_"+tar+"_ini"+mon+".tsv", 'r')
@@ -2029,7 +2029,7 @@ def GetHindcasts_UQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, 
 		get_ipython().system("curl -k "+url+" > "+model+"_UQ_"+tar+"_ini"+mon+".tsv")
 
 
-def GetHindcasts_VQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea):
+def GetHindcasts_VQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download, dic_sea, pressure):
 	if not force_download:
 		try:
 			ff=open(model+"_VQ_"+tar+"_ini"+mon+".tsv", 'r')
@@ -2043,7 +2043,7 @@ def GetHindcasts_VQ(tini,tend,wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, 
 #		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.ENSEMBLE/.PGBF/.pressure_level/.VGRD/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.ENSEMBLE/.PGBF/.pressure_level/.SPFH/mul/P/850/VALUE/S/%281%20'+mon+'%20'+str(tini)+'-'+str(tend)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
 #		}
 		# calls curl to download data
-		#url=dic[model]
+		# url=dic[model]
 		url=eval(dic_sea[model+'_hcst_VQ'])
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_VQ_"+tar+"_ini"+mon+".tsv")
@@ -2309,7 +2309,7 @@ def GetForecast_TMIN(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, 
 		print("\n Forecast URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_TMIN_"+tar+"_ini"+monf+str(fyr)+".tsv")
 
-def GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea):
+def GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea, pressure):
 	if not force_download:
 		try:
 			ff=open(model+"fcst_UQ_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
@@ -2328,7 +2328,7 @@ def GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, fo
 		print("\n Forecast URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_UQ_"+tar+"_ini"+monf+str(fyr)+".tsv")
 
-def GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea):
+def GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download, dic_sea, pressure):
 	if not force_download:
 		try:
 			ff=open(model+"fcst_VQ_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
