@@ -2583,16 +2583,19 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 
 		#######BUILD MODEL AND VALIDATE IT	!!!!!
 
+
+		# save goodness index
+		f.write("112\n")
+		file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_Kendallstau_'+tar+'_'+mon+'\n'
+		f.write(file)
+
 		# NB: Default output format is GrADS format
 		# select output format
 		f.write("131\n")
 		# GrADS format
 		f.write("3\n")
 
-		# save goodness index
-		f.write("112\n")
-		file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_Kendallstau_'+tar+'_'+mon+'\n'
-		f.write(file)
+
 
 		# Build cross-validated model
 		f.write("311\n")   #In the seasonal case, training periods are usually too short to do retroactive analysis
@@ -2621,6 +2624,21 @@ def CPTscript(model,predictand, mon,monf,fyr,tini,tend,nla1,sla1,wlo1,elo1,nla2,
 			f.write(file)
 			#Exit submenu
 			f.write("0\n")
+			
+			#save X and Y CCA Loadings Maps
+			f.write('111\n')
+			f.write('421\n')
+			file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_YCCAMAP_'+tar+'_'+mon+'\n'
+			f.write(file)
+			f.write('0\n')
+
+			f.write('111\n')
+			f.write('411\n')
+			file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_XCCAMAP_'+tar+'_'+mon+'\n'
+			f.write(file)
+			f.write('0\n')
+
+
 
 		# cross-validated skill maps
 		f.write("413\n")
