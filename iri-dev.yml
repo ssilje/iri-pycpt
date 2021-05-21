@@ -3,4 +3,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - appnope
+  - appnope=0.1.0=py36_0
